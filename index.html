@@ -58,6 +58,10 @@
   .seg button.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:700}
   .card .send{width:100%;padding:13px;margin-top:20px;font-size:16px}
   .err{color:#dc2626;font-size:13px;margin-top:10px;text-align:center;min-height:1em}
+  .passwrap{position:relative}
+  .passwrap input{padding-right:46px}
+  .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;cursor:pointer;padding:6px}
+  .hint{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.5}
   /* 입력창 왼쪽 버튼 */
   .tool{border:0;background:none;font-size:23px;padding:0 4px;cursor:pointer;line-height:1}
   .tool.on{filter:drop-shadow(0 0 4px var(--accent))}
@@ -131,7 +135,11 @@
     <label id="lbName" for="fName">내 이름 / Tên</label>
     <input id="fName" maxlength="20" autocomplete="nickname" required>
     <label id="lbPass" for="fPass">방 비밀번호 / Mật khẩu phòng</label>
-    <input id="fPass" type="password" autocomplete="current-password" required>
+    <div class="passwrap">
+      <input id="fPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required>
+      <button type="button" class="eye" id="eyeBtn" aria-label="show or hide">🙈</button>
+    </div>
+    <div class="hint">둘이 <b>똑같이</b> 입력해야 같은 방이에요 (대소문자·띄어쓰기는 상관없음)<br>Hai người phải nhập <b>giống nhau</b> (không phân biệt hoa/thường, dấu cách)</div>
     <button class="send" id="enterBtn" type="submit">입장 · Vào</button>
     <div class="err" id="setupErr"></div>
   </form>
@@ -150,13 +158,13 @@ import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "./stickers.js";
 const UI = {
   ko:{ph:'메시지 입력…',translating:'번역 중…',failed:'번역 실패 · 눌러서 다시',sendFail:'전송 실패 · 눌러서 다시',
       empty:'아직 메시지가 없어요.\n내가 한국어로 보내면 상대는 베트남어로 봐요 💌',
-      tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
+      tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',alone:'⚠️ 아직 이 방에 혼자예요 · 방 확인번호 {code} · 상대 화면의 번호와 같아야 같은 방이에요',together:'💕 {names} 님과 같은 방이에요 · 말풍선을 누르면 원문/번역을 같이 볼 수 있어요',count:'참여자 {n}명',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
       wrongPass:'비밀번호가 틀렸어요',shortPass:'방 비밀번호는 8자 이상으로 해 주세요 (둘이 똑같이 입력해야 같은 방이에요)',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
       today:'오늘',enter:'입장 · Vào',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
       save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
   vi:{ph:'Nhắn tin…',translating:'Đang dịch…',failed:'Dịch lỗi · chạm để thử lại',sendFail:'Gửi lỗi · chạm để thử lại',
       empty:'Chưa có tin nhắn.\nEm nhắn tiếng Việt, anh ấy sẽ đọc bằng tiếng Hàn 💌',
-      tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
+      tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',alone:'⚠️ Phòng này chưa có ai khác · Mã phòng {code} · phải trùng với số bên kia mới là cùng phòng',together:'💕 Đang cùng phòng với {names} · Chạm vào tin nhắn để xem bản gốc và bản dịch',count:'{n} người',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
       wrongPass:'Sai mật khẩu rồi',shortPass:'Mật khẩu phòng cần ít nhất 8 ký tự (hai người nhập giống nhau mới vào cùng phòng nhé)',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
       today:'Hôm nay',enter:'Vào · 입장',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
       save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
@@ -174,7 +182,8 @@ let me = {
 const t = k => (UI[me.lang]||UI.ko)[k];
 
 // ===== Firebase =====
-let fb, auth, fs, uid=null, roomId=null, unsubMsgs=null;
+let fb, auth, fs, uid=null, roomId=null, unsubMsgs=null, unsubMembers=null;
+let roomMembers=[], membersLoaded=false;   // 이 방에 들어온 사람들
 // Firebase 접속 정보 (공개돼도 되는 값. 보안은 방 비밀번호 + Firestore 규칙 + 앱 체크가 담당)
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDH6Xa5_7113SFYd_DNBsrmkynN3aVFHPs",
@@ -213,6 +222,18 @@ async function sha256(s){
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
   return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
+// 같은 비밀번호인데 대소문자·띄어쓰기·글자 조합 방식이 달라서 다른 방이 되는 일을 막는다
+const normPass = p => String(p||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
+// 방 확인번호: 방 주소(해시)에서 뽑은 4자리 숫자. 둘의 번호가 같으면 같은 방 (비밀번호는 드러나지 않음)
+const roomCode = () => roomId ? String(parseInt(roomId.slice(0,8),16)%10000).padStart(4,'0') : '';
+function showRoomStatus(){
+  if(!roomId || !membersLoaded) return;
+  const others = roomMembers.filter(m=>m.id!==uid);
+  if(!others.length){ showNotice(t('alone').replace('{code}', roomCode()), true); return; }
+  let text = t('together').replace('{names}', others.map(o=>o.name||'💕').join(', '));
+  if(others.length>1) text += ' · ' + t('count').replace('{n}', others.length+1);
+  showNotice(text);
+}
 function showNotice(text, warn){ const n=$('notice'); n.textContent=text||''; n.className='notice'+(warn?' warn':''); n.style.display=text?'':'none'; }
 const roleWord = r => r==='f'?'Girlfriend':r==='m'?'Boyfriend':'Partner';
 function contextBefore(ts){
@@ -237,7 +258,7 @@ Tone rules (very important):
 - Korean: casual 반말 the way Korean couples text (e.g. "뭐해?", "보고 싶어", "밥 먹었어?", "잘 자~"). No 존댓말 (-요/-습니다) unless the original is clearly polite or joking. Natural endings like ~어/~야/~지/~네.
 - Vietnamese: ${viRule} Use natural texting particles where they fit (nhé, nha, à, ơi, hen, đó, nè). Avoid formal words.
 - Translate the meaning and feeling, not word by word. Keep emoji and line breaks.
-- Convert laughter and text emoticons to what the reader's language uses: Korean ㅋㅋ → haha, ㅎㅎ → hihi, ㅠㅠ/ㅜㅜ → huhu; Vietnamese haha/hihi/hehe → ㅋㅋ/ㅎㅎ, huhu → ㅠㅠ. A Vietnamese translation must not contain any Korean letters, and a Korean translation should not keep Vietnamese words. Do not add or double laughter that is not in the original.
+- Convert laughter and text emoticons to what the reader's language uses: Korean ㅋㅋ → haha, ㅎㅎ → hihi, ㅠㅠ/ㅜㅜ → huhu; Vietnamese haha/hihi/hehe/kkk/keke/kaka → ㅋㅋ/ㅎㅎ (keep roughly the same length), huhu → ㅠㅠ. A Vietnamese translation must not contain any Korean letters, and a Korean translation should not keep Vietnamese words. Do not add or double laughter that is not in the original.
 - Keep pet names natural (자기야 ↔ anh yêu/em yêu, 여보 ↔ vợ ơi/chồng ơi) but never add affection that is not in the original.
 - If the message is already in the target language, return it unchanged.
 
@@ -260,6 +281,23 @@ async function translate(text, target, senderRole, context){
   let tr = String(out.text||'').trim();
   if(target==='vi') tr = tr.replace(/ㅋ+/g,'haha').replace(/ㅎ+/g,'hihi').replace(/[ㅠㅜ]+/g,'huhu');
   return { src:String(out.src||'').slice(0,2).toLowerCase(), text:tr };
+}
+// 받은 메시지 번역 대기열: 한꺼번에 여러 개를 보내지 않고 하나씩 처리
+const trQueue=[]; const trQueued=new Set(); let trBusy=false;
+function queueTranslate(m, target){
+  const key=m.id+target;
+  if(trQueued.has(key) || inflight.has(key)) return;
+  trQueued.add(key); trQueue.push({m, target}); pumpQueue();
+}
+async function pumpQueue(){
+  if(trBusy) return; trBusy=true;
+  while(trQueue.length){
+    const {m, target} = trQueue.shift();
+    await translateAndSave(m, target);
+    trQueued.delete(m.id+target);
+    await new Promise(r=>setTimeout(r, failed.has(m.id) ? 5000 : 800));   // 실패하면 잠깐 쉬었다가 다음 것
+  }
+  trBusy=false;
 }
 async function translateAndSave(m, target){
   if(inflight.has(m.id+target)) return;
@@ -317,7 +355,7 @@ function render(){
         // 보낸 사람이 번역을 저장할 시간을 8초 기다린 뒤 직접 번역 (중복 비용 방지)
         const age=Date.now()-m.ts;
         if(document.visibilityState!=='visible'){ /* 화면이 다시 켜지면 아래 visibilitychange에서 재시도 */ }
-        else if(age>8000) translateAndSave(m, me.lang); else next=Math.min(next, 8000-age+100);
+        else if(age>8000) queueTranslate(m, me.lang); else next=Math.min(next, 8000-age+100);
       }
     } else if(mine){
       const tr = m.tr && m.tr[other];
@@ -428,7 +466,7 @@ async function sendPhotos(files){
     m.imgRef=imgRef; m.imgData=img.data;
     await writeMsg(ref, m);
   }
-  showNotice(t('tap'));
+  if(membersLoaded) showRoomStatus(); else showNotice(t('tap'));
 }
 async function writeMsg(ref, m){
   try{
@@ -493,15 +531,25 @@ $('input').addEventListener('input',autosize);
 
 // ===== 방 입장 =====
 async function joinRoom(){
-  roomId = await sha256('couple-chat|'+me.pass);
+  roomId = await sha256('couple-chat|'+normPass(me.pass));
   if(unsubMsgs) unsubMsgs();
+  if(unsubMembers) unsubMembers();
+  // 방을 바꾸면 이전 방 내용은 화면에서 비운다
+  msgs=[]; roomMembers=[]; membersLoaded=false; localPending.length=0; failed.clear(); showBoth.clear(); trQueue.length=0; trQueued.clear();
+  render();
   showNotice(t('connecting'));
   await setDoc(doc(fs,'rooms',roomId,'members',uid), { name:me.name, lang:me.lang, role:me.role, seen:Date.now() }).catch(()=>{});
   const q = query(collection(fs,'rooms',roomId,'messages'), orderBy('ts'), limitToLast(300));
   unsubMsgs = onSnapshot(q, snap=>{
     msgs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(m=>typeof m.text==='string' && typeof m.ts==='number');
-    showNotice(t('tap')); render();
+    if(membersLoaded) showRoomStatus(); else showNotice(t('tap'));
+    render();
   }, err=>{ console.error(err); showNotice(t('offline'), true); });
+  // 이 방에 누가 들어와 있는지 (상대가 같은 비밀번호로 들어왔는지 바로 알 수 있게)
+  unsubMembers = onSnapshot(collection(fs,'rooms',roomId,'members'), snap=>{
+    roomMembers = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    membersLoaded = true; showRoomStatus();
+  }, err=>console.error(err));
 }
 
 // ===== 설정 화면 =====
@@ -518,13 +566,15 @@ function openSetup(err){
   $('setup').classList.add('show');
 }
 $('settingsBtn').onclick=()=>openSetup();
+// 눈 버튼: 비밀번호 보이기/가리기 (기본은 보이게: 잘못 입력해서 서로 다른 방에 들어가는 일을 막기 위해)
+$('eyeBtn').onclick=()=>{ const f=$('fPass'); const show=f.type==='password'; f.type=show?'text':'password'; $('eyeBtn').textContent=show?'🙈':'👁️'; };
 $('setupForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const name=$('fName').value.trim(), pass=$('fPass').value;
   if(!draft.lang||!draft.role||!name||!pass){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
   $('enterBtn').disabled=true; $('setupErr').textContent='';
   // 비밀번호가 곧 방 주소라서, 너무 짧으면 남이 추측할 수 있음
-  if(pass.length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
+  if(normPass(pass).length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
   me.pass=pass;
   Object.assign(me,{lang:draft.lang, role:draft.role, name});
   for(const k of ['lang','role','name','pass']) store.set(k, me[k]);
