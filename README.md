@@ -10,6 +10,7 @@
 | 사이트 | GitHub Pages |
 | 대화·사진 저장, 익명 로그인 | Firebase (Firestore, Authentication) — 프로젝트 `couple-chat-39ee8` |
 | 번역 | Firebase AI Logic → Gemini (`gemini-3.8-flash`, 무료 등급) |
+| 번역 보호 | Firebase App Check (reCAPTCHA Enterprise) + 로그인한 사용자만 허용 |
 
 ## 파일
 | 파일 | 역할 |
@@ -26,4 +27,5 @@
 ## 보안 메모
 - 방 ID는 비밀번호의 해시라서, 비밀번호를 모르면 대화에 접근할 수 없습니다. 길고 추측하기 어렵게 정하세요.
 - 메시지는 삭제·수정이 막혀 있고, 번역 결과만 추가할 수 있습니다.
+- 번역(Gemini)은 이 사이트 주소(`taehuicho00.github.io`)에서 온 요청만 허용됩니다. 주소를 바꾸면 reCAPTCHA 키의 도메인도 추가해야 합니다.
 - Gemini 무료 등급은 번역할 문장이 구글 제품 개선에 쓰일 수 있습니다 (사진·스티커는 보내지 않음).
