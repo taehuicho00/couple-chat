@@ -9,7 +9,7 @@
 |---|---|
 | 사이트 | GitHub Pages |
 | 대화·사진 저장, 익명 로그인 | Firebase (Firestore, Authentication) — 프로젝트 `couple-chat-39ee8` |
-| 번역 | Firebase AI Logic → Gemini (`gemini-3.8-flash`, 무료 등급) |
+| 번역 | Firebase AI Logic → Gemini (`gemini-3.5-flash-lite`, 무료 등급) |
 | 번역 보호 | Firebase App Check (reCAPTCHA Enterprise) + 로그인한 사용자만 허용 |
 
 ## 파일

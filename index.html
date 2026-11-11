@@ -187,7 +187,8 @@ const FIREBASE_CONFIG = {
 // 앱 체크(reCAPTCHA Enterprise) 사이트 키: 우리 사이트에서 온 요청만 Gemini를 쓸 수 있게 해 줌
 // (사이트 키는 공개용 값. 비밀 키는 코드에 넣지 않는다)
 const RECAPTCHA_SITE_KEY = "6LdBtRsuAAAAALhbnjL4Ran9-G8pc-sxGoIu7-wy";
-const MODEL = "gemini-3.8-flash";
+// gemini-3.8-flash는 무료 등급에서 응답이 오지 않아(테스트 시 18초 넘게 무응답) flash-lite를 사용
+const MODEL = "gemini-3.5-flash-lite";
 let model = null;
 try {
   fb = initializeApp(FIREBASE_CONFIG);
@@ -197,7 +198,7 @@ try {
   model = getGenerativeModel(getAI(fb, { backend: new GoogleAIBackend() }), {
     model: MODEL,
     generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
-  });
+  }, { timeout: 20000 });   // 20초 안에 답이 없으면 실패로 처리 (눌러서 재시도 가능)
 } catch(e) { console.error(e); showNotice('Firebase 연결 설정을 확인해 주세요', true); }
 
 // ===== 상태 =====
@@ -235,7 +236,8 @@ Tone rules (very important):
 - Sound like a real couple texting each other: warm, casual, affectionate, natural. Never stiff, formal, or textbook-like.
 - Korean: casual 반말 the way Korean couples text (e.g. "뭐해?", "보고 싶어", "밥 먹었어?", "잘 자~"). No 존댓말 (-요/-습니다) unless the original is clearly polite or joking. Natural endings like ~어/~야/~지/~네.
 - Vietnamese: ${viRule} Use natural texting particles where they fit (nhé, nha, à, ơi, hen, đó, nè). Avoid formal words.
-- Translate the meaning and feeling, not word by word. Keep emoji and line breaks. Convert laughter naturally (ㅋㅋ/ㅎㅎ ↔ haha/hihi).
+- Translate the meaning and feeling, not word by word. Keep emoji and line breaks.
+- Convert laughter and text emoticons to what the reader's language uses: Korean ㅋㅋ → haha, ㅎㅎ → hihi, ㅠㅠ/ㅜㅜ → huhu; Vietnamese haha/hihi/hehe → ㅋㅋ/ㅎㅎ, huhu → ㅠㅠ. A Vietnamese translation must not contain any Korean letters, and a Korean translation should not keep Vietnamese words. Do not add or double laughter that is not in the original.
 - Keep pet names natural (자기야 ↔ anh yêu/em yêu, 여보 ↔ vợ ơi/chồng ơi) but never add affection that is not in the original.
 - If the message is already in the target language, return it unchanged.
 
@@ -255,7 +257,9 @@ async function translate(text, target, senderRole, context){
   const raw = res.response.text();
   let out;
   try{ out = JSON.parse((raw.match(/\{[\s\S]*\}/)||[raw])[0]); }catch{ out = { src:'', text: raw.trim() }; }
-  return { src:String(out.src||'').slice(0,2).toLowerCase(), text:String(out.text||'').trim() };
+  let tr = String(out.text||'').trim();
+  if(target==='vi') tr = tr.replace(/ㅋ+/g,'haha').replace(/ㅎ+/g,'hihi').replace(/[ㅠㅜ]+/g,'huhu');
+  return { src:String(out.src||'').slice(0,2).toLowerCase(), text:tr };
 }
 async function translateAndSave(m, target){
   if(inflight.has(m.id+target)) return;
@@ -312,7 +316,8 @@ function render(){
         pending=true;
         // 보낸 사람이 번역을 저장할 시간을 8초 기다린 뒤 직접 번역 (중복 비용 방지)
         const age=Date.now()-m.ts;
-        if(age>8000) translateAndSave(m, me.lang); else next=Math.min(next, 8000-age+100);
+        if(document.visibilityState!=='visible'){ /* 화면이 다시 켜지면 아래 visibilitychange에서 재시도 */ }
+        else if(age>8000) translateAndSave(m, me.lang); else next=Math.min(next, 8000-age+100);
       }
     } else if(mine){
       const tr = m.tr && m.tr[other];
@@ -530,6 +535,9 @@ function applyUi(){
   document.documentElement.lang=me.lang;
   $('input').placeholder=t('ph'); render();
 }
+
+// 화면으로 돌아오면 실패했던 번역을 자동으로 다시 시도
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ failed.clear(); render(); } });
 
 // ===== 시작 =====
 applyUi();
