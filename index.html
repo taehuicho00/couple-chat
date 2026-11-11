@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>우리 둘 💕</title>
+<meta name="theme-color" content="#ff6b8a">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="우리 둘">
+<style>
+  :root{--bg:#fff5f7;--panel:#fff;--line:#f2d9df;--text:#2a1e22;--sub:#8a7479;--me:#ff6b8a;--other:#fff;--accent:#ff6b8a}
+  @media (prefers-color-scheme:dark){:root{--bg:#17121a;--panel:#211a24;--line:#3a2d37;--text:#f3e9ee;--sub:#a8949e;--me:#e5577a;--other:#2b2230}}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,sans-serif}
+  .app{display:flex;flex-direction:column;height:100dvh;max-width:760px;margin:0 auto}
+  header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+    background:var(--panel);border-bottom:1px solid var(--line)}
+  header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .iconbtn{border:0;background:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px}
+  .notice{font-size:12.5px;color:var(--sub);text-align:center;padding:7px 14px;line-height:1.5}
+  .notice.warn{color:#c2410c}
+  #list{flex:1;overflow-y:auto;padding:12px 12px 6px;display:flex;flex-direction:column}
+  .day{align-self:center;font-size:11.5px;color:var(--sub);background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;padding:3px 10px;margin:12px 0 4px}
+  .row{display:flex;flex-direction:column;max-width:80%;margin-top:8px}
+  .row.me{align-self:flex-end;align-items:flex-end}
+  .row.other{align-self:flex-start;align-items:flex-start}
+  .row.cont{margin-top:2px}
+  .name{font-size:12px;color:var(--sub);margin:0 6px 3px}
+  .bubble{padding:9px 13px;border-radius:18px;line-height:1.45;font-size:15.5px;white-space:pre-wrap;word-break:break-word;cursor:pointer}
+  .me .bubble{background:var(--me);color:#fff;border-bottom-right-radius:6px}
+  .other .bubble{background:var(--other);border:1px solid var(--line);border-bottom-left-radius:6px}
+  .sub{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed currentColor;opacity:.7;font-size:13px}
+  .meta{font-size:11px;color:var(--sub);margin:3px 6px 0;display:flex;gap:6px}
+  .pending{font-style:italic;opacity:.7}
+  footer{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
+  textarea{flex:1;resize:none;font:inherit;font-size:16px;padding:10px 14px;border-radius:20px;border:1px solid var(--line);
+    background:var(--bg);color:var(--text);max-height:120px;line-height:1.4}
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .send{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:0 18px;border-radius:20px;cursor:pointer}
+  .send:disabled{opacity:.45}
+  .empty{margin:auto;text-align:center;color:var(--sub);font-size:14px;line-height:1.7;padding:30px;white-space:pre-line}
+  /* 설정 화면 */
+  #setup{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;z-index:10;overflow:auto}
+  #setup.show{display:flex}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:380px}
+  .card h2{margin:0 0 4px;font-size:22px;text-align:center}
+  .card p.lead{margin:0 0 18px;text-align:center;color:var(--sub);font-size:13px}
+  label{display:block;font-size:13px;color:var(--sub);margin:12px 0 5px}
+  input,select{width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:15px;cursor:pointer}
+  .seg button.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:700}
+  .card .send{width:100%;padding:13px;margin-top:20px;font-size:16px}
+  .err{color:#dc2626;font-size:13px;margin-top:10px;text-align:center;min-height:1em}
+  /* 입력창 왼쪽 버튼 */
+  .tool{border:0;background:none;font-size:23px;padding:0 4px;cursor:pointer;line-height:1}
+  .tool.on{filter:drop-shadow(0 0 4px var(--accent))}
+  /* 스티커·이모지 패널 */
+  #panel{display:none;background:var(--panel);border-top:1px solid var(--line);height:260px;flex-direction:column}
+  #panel.show{display:flex}
+  .tabs{display:flex;gap:2px;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .tabs button{border:0;background:none;font-size:20px;padding:5px 10px;border-radius:10px;cursor:pointer}
+  .tabs button.on{background:var(--bg)}
+  .grid{flex:1;overflow-y:auto;display:grid;gap:6px;padding:8px;align-content:start}
+  .grid.st{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}
+  .grid.em{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
+  .grid button{border:0;background:none;cursor:pointer;border-radius:12px;padding:2px}
+  .grid button:active{background:var(--bg)}
+  .grid.st button svg{width:100%;height:auto;display:block}
+  .grid.st button span{display:block;font-size:10.5px;color:var(--sub);margin-top:-2px}
+  .grid.em button{font-size:27px;padding:4px 0}
+  /* 채팅 안의 스티커·사진 */
+  .sticker{width:124px;height:124px;cursor:default}
+  .sticker svg{width:100%;height:100%}
+  .photo{display:block;border-radius:16px;max-width:min(240px,62vw);max-height:320px;object-fit:cover;cursor:zoom-in;
+    background:var(--line);border:1px solid var(--line)}
+  .photo.loading{width:200px;height:200px;animation:pulse 1.2s infinite}
+  @keyframes pulse{50%{opacity:.5}}
+  #viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:20}
+  #viewer.show{display:flex}
+  #viewer img{max-width:100%;max-height:100%;object-fit:contain}
+  #viewer .close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;color:#fff;font-size:30px;background:none;border:0;cursor:pointer}
+  #viewer .hint{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));color:#ccc;font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1 id="title">우리 둘 💕</h1>
+    <button class="iconbtn" id="settingsBtn" aria-label="settings">⚙️</button>
+  </header>
+  <div class="notice" id="notice"></div>
+  <div id="list"></div>
+  <footer>
+    <button class="tool" id="photoBtn" aria-label="photo">📷</button>
+    <button class="tool" id="emojiBtn" aria-label="emoticon">🐰</button>
+    <textarea id="input" rows="1"></textarea>
+    <button class="send" id="send">➤</button>
+  </footer>
+  <input type="file" id="fileInput" accept="image/*" multiple hidden>
+  <div id="panel">
+    <div class="tabs" id="tabs"></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<!-- 사진 크게 보기 -->
+<div id="viewer"><button class="close" aria-label="close">✕</button><img alt=""><div class="hint" id="viewerHint"></div></div>
+
+<!-- 처음 들어올 때 / ⚙️ 눌렀을 때 -->
+<div id="setup">
+  <form class="card" id="setupForm">
+    <h2>💕</h2>
+    <p class="lead">한국어 ↔ Tiếng Việt</p>
+    <label id="lbLang">언어 / Ngôn ngữ</label>
+    <div class="seg" id="segLang">
+      <button type="button" data-v="ko">🇰🇷 한국어</button>
+      <button type="button" data-v="vi">🇻🇳 Tiếng Việt</button>
+    </div>
+    <label id="lbRole">나는 / Tôi là</label>
+    <div class="seg" id="segRole">
+      <button type="button" data-v="m">남자 · Nam</button>
+      <button type="button" data-v="f">여자 · Nữ</button>
+    </div>
+    <label id="lbName" for="fName">내 이름 / Tên</label>
+    <input id="fName" maxlength="20" autocomplete="nickname" required>
+    <label id="lbPass" for="fPass">방 비밀번호 / Mật khẩu phòng</label>
+    <input id="fPass" type="password" autocomplete="current-password" required>
+    <button class="send" id="enterBtn" type="submit">입장 · Vào</button>
+    <div class="err" id="setupErr"></div>
+  </form>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, onSnapshot, query, orderBy, limitToLast, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "/stickers.js";
+
+// ===== 화면 문구 =====
+const UI = {
+  ko:{ph:'메시지 입력…',translating:'번역 중…',failed:'번역 실패 · 눌러서 다시',sendFail:'전송 실패 · 눌러서 다시',
+      empty:'아직 메시지가 없어요.\n내가 한국어로 보내면 상대는 베트남어로 봐요 💌',
+      tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
+      wrongPass:'비밀번호가 틀렸어요',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
+      today:'오늘',enter:'입장 · Vào',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
+      save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
+  vi:{ph:'Nhắn tin…',translating:'Đang dịch…',failed:'Dịch lỗi · chạm để thử lại',sendFail:'Gửi lỗi · chạm để thử lại',
+      empty:'Chưa có tin nhắn.\nEm nhắn tiếng Việt, anh ấy sẽ đọc bằng tiếng Hàn 💌',
+      tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
+      wrongPass:'Sai mật khẩu rồi',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
+      today:'Hôm nay',enter:'Vào · 입장',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
+      save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
+};
+const $ = id => document.getElementById(id);
+const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}} };
+
+// ===== 내 설정 (이 기기에 저장) =====
+let me = {
+  lang: store.get('lang') || ((navigator.language||'').startsWith('vi') ? 'vi' : 'ko'),
+  role: store.get('role') || null,
+  name: store.get('name') || '',
+  pass: store.get('pass') || ''
+};
+const t = k => (UI[me.lang]||UI.ko)[k];
+
+// ===== Firebase =====
+let fb, auth, fs, uid=null, roomId=null, unsubMsgs=null;
+// 접속 정보는 서버(/api/config)가 Vercel 환경변수에서 읽어 준다. 코드 수정 불필요.
+async function loadConfig(){
+  try{ const r=await fetch('/api/config'); if(r.ok) return await r.json(); }catch{}
+  return window.FIREBASE_CONFIG || null;   // 로컬 테스트용 예비 경로
+}
+const fbConfig = await loadConfig();
+try {
+  if(!fbConfig || !fbConfig.apiKey) throw new Error('no config');
+  fb = initializeApp(fbConfig);
+  auth = getAuth(fb); fs = getFirestore(fb);
+} catch(e) { showNotice('Vercel 환경변수 FIREBASE_CONFIG 를 확인해 주세요', true); }
+
+// ===== 상태 =====
+let msgs = [];                 // 화면에 보이는 메시지
+const showBoth = new Set();    // 원문+번역 같이 보기
+const failed = new Set();      // 번역 실패
+const inflight = new Set();    // 번역 요청 중
+const localPending = [];       // 전송 실패한 내 메시지
+
+// ===== 유틸 =====
+async function sha256(s){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function showNotice(text, warn){ const n=$('notice'); n.textContent=text||''; n.className='notice'+(warn?' warn':''); n.style.display=text?'':'none'; }
+const roleWord = r => r==='f'?'Girlfriend':r==='m'?'Boyfriend':'Partner';
+function contextBefore(ts){
+  return msgs.filter(m=>m.ts<ts).slice(-6).map(m=>{
+    const body = m.kind==='image' ? '[sent a photo]' : m.kind==='sticker' ? `[sent a sticker: "${stickerLabel(m.sticker,'ko')}"]` : m.text;
+    return `${roleWord(m.role)}: ${body}`;
+  }).join('\n');
+}
+
+// ===== 번역 서버 호출 =====
+async function api(body){
+  const r = await fetch('/api/translate', {
+    method:'POST', headers:{'content-type':'application/json','x-chat-pass':me.pass},
+    body: JSON.stringify(body)
+  });
+  if(r.status===401) throw Object.assign(new Error('pass'),{code:'pass'});
+  if(!r.ok) throw Object.assign(new Error('server'),{code:'server'});
+  return r.json();
+}
+async function translateAndSave(m, target){
+  if(inflight.has(m.id+target)) return;
+  inflight.add(m.id+target); failed.delete(m.id); render();
+  try{
+    const r = await api({ text:m.text, target, senderRole:m.role, context:contextBefore(m.ts) });
+    if(!r.text) throw new Error('empty');
+    const upd = { ['tr.'+target]: r.text };
+    if(!m.src && r.src) upd.src = r.src;
+    await updateDoc(doc(fs,'rooms',roomId,'messages',m.id), upd);
+  }catch(e){
+    failed.add(m.id);
+    if(e.code==='pass'){ openSetup(t('wrongPass')); }
+  }finally{ inflight.delete(m.id+target); render(); }
+}
+
+// ===== 그리기 =====
+const fmtTime = ts => new Date(ts).toLocaleTimeString(me.lang==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'});
+const fmtDay = ts => { const d=new Date(ts), n=new Date();
+  if(d.toDateString()===n.toDateString()) return t('today');
+  return d.toLocaleDateString(me.lang==='vi'?'vi-VN':'ko-KR',{month:'long',day:'numeric',weekday:'short'}); };
+let recheck=null;
+function render(){
+  const list=$('list');
+  const nearBottom = list.scrollHeight-list.scrollTop-list.clientHeight < 120;
+  list.textContent='';
+  const all = [...msgs, ...localPending].sort((a,b)=>a.ts-b.ts);
+  if(!all.length){ const e=document.createElement('div'); e.className='empty'; e.textContent=t('empty'); list.appendChild(e); }
+  let prev=null, lastDay='', next=Infinity;
+  for(const m of all){
+    const day=new Date(m.ts).toDateString();
+    if(day!==lastDay){ const d=document.createElement('div'); d.className='day'; d.textContent=fmtDay(m.ts); list.appendChild(d); lastDay=day; prev=null; }
+    const mine = m.uid===uid;
+    const cont = prev && prev.uid===m.uid && m.ts-prev.ts<120000;
+    const row=document.createElement('div'); row.className='row '+(mine?'me':'other')+(cont?' cont':'');
+    if(!mine && !cont){ const n=document.createElement('div'); n.className='name'; n.textContent=m.name||'💕'; row.appendChild(n); }
+
+    const other = me.lang==='ko'?'vi':'ko';
+    if(m.kind==='sticker' || m.kind==='image'){
+      row.appendChild(m.kind==='sticker' ? stickerEl(m) : photoEl(m));
+      const meta=document.createElement('div'); meta.className='meta';
+      const tm=document.createElement('span'); tm.textContent=fmtTime(m.ts); meta.appendChild(tm);
+      if(m.local){ const s=document.createElement('span'); s.className='pending'; s.style.color='#dc2626'; s.textContent=t('sendFail'); meta.appendChild(s);
+        row.lastElementChild.onclick=()=>retrySend(m); }
+      row.appendChild(meta); list.appendChild(row); prev=m; continue;
+    }
+    // 무엇을 보여줄지: 상대 메시지는 내 언어 번역본, 내 메시지는 원문
+    const sameLang = m.src ? m.src===me.lang : m.lang===me.lang;
+    let main=m.text, sub=null, pending=false;
+    if(!mine && !sameLang){
+      const tr = m.tr && m.tr[me.lang];
+      if(tr){ main=tr; sub=m.text; }
+      else if(!failed.has(m.id) && !m.local){
+        pending=true;
+        // 보낸 사람이 번역을 저장할 시간을 8초 기다린 뒤 직접 번역 (중복 비용 방지)
+        const age=Date.now()-m.ts;
+        if(age>8000) translateAndSave(m, me.lang); else next=Math.min(next, 8000-age+100);
+      }
+    } else if(mine){
+      const tr = m.tr && m.tr[other];
+      if(tr) sub=tr;   // 상대에게 어떻게 보이는지
+    }
+    const b=document.createElement('div'); b.className='bubble'; b.textContent=main;
+    if(sub && showBoth.has(m.id)){ const s=document.createElement('span'); s.className='sub'; s.textContent=sub; b.appendChild(s); }
+    b.onclick=()=>{
+      if(m.local){ retrySend(m); return; }
+      if(failed.has(m.id)){ translateAndSave(m, mine?other:me.lang); return; }
+      if(sub){ showBoth.has(m.id)?showBoth.delete(m.id):showBoth.add(m.id); render(); }
+    };
+    row.appendChild(b);
+    const meta=document.createElement('div'); meta.className='meta';
+    const tm=document.createElement('span'); tm.textContent=fmtTime(m.ts); meta.appendChild(tm);
+    const st = m.local ? t('sendFail') : failed.has(m.id) ? t('failed')
+             : (pending || inflight.has(m.id+me.lang) || (mine && inflight.has(m.id+other))) ? t('translating') : '';
+    if(st){ const s=document.createElement('span'); s.className='pending'; s.textContent=st; if(m.local||failed.has(m.id)) s.style.color='#dc2626'; meta.appendChild(s); }
+    row.appendChild(meta);
+    list.appendChild(row); prev=m;
+  }
+  if(nearBottom) list.scrollTop=list.scrollHeight;
+  clearTimeout(recheck); if(next<Infinity) recheck=setTimeout(render,next);
+}
+
+// ===== 스티커·사진 그리기 =====
+function stickerEl(m){
+  const d=document.createElement('div'); d.className='sticker';
+  d.innerHTML = stickerSvg(m.sticker) || '';   // 우리가 만든 SVG만 넣음 (외부 입력 아님)
+  d.title = stickerLabel(m.sticker, me.lang);
+  return d;
+}
+const imgCache = new Map();   // imageId -> dataURL
+const imgLoading = new Set();
+function photoEl(m){
+  const img=document.createElement('img'); img.className='photo'; img.alt=t('photo');
+  if(m.w && m.h) img.style.aspectRatio = `${m.w} / ${m.h}`;
+  const src = m.preview || imgCache.get(m.imageId);
+  if(src){ img.src=src; img.onclick=()=>openViewer(src); }
+  else { img.classList.add('loading'); loadImage(m.imageId); }
+  return img;
+}
+async function loadImage(id){
+  if(!id || imgLoading.has(id) || imgCache.has(id)) return;
+  imgLoading.add(id);
+  try{
+    const snap = await getDoc(doc(fs,'rooms',roomId,'images',id));
+    const data = snap.exists() ? snap.data().data : null;
+    if(typeof data==='string' && data.startsWith('data:image/')) imgCache.set(id, data);
+  }catch(e){ console.error(e); }
+  imgLoading.delete(id); render();
+}
+function openViewer(src){ $('viewer').querySelector('img').src=src; $('viewerHint').textContent=t('save'); $('viewer').classList.add('show'); }
+$('viewer').onclick=()=>$('viewer').classList.remove('show');
+
+// ===== 사진 압축 (휴대폰 사진 3~10MB → 보통 100~400KB) =====
+async function loadBitmap(file){
+  try{ return await createImageBitmap(file, { imageOrientation:'from-image' }); }
+  catch{
+    return await new Promise((ok,bad)=>{ const u=URL.createObjectURL(file); const im=new Image();
+      im.onload=()=>{ ok(im); }; im.onerror=bad; im.src=u; });
+  }
+}
+async function compress(file){
+  const bmp = await loadBitmap(file);
+  const W = bmp.width || bmp.naturalWidth, H = bmp.height || bmp.naturalHeight;
+  let max=1600, q=0.82, out='';
+  for(let i=0;i<8;i++){
+    const s=Math.min(1, max/Math.max(W,H));
+    const w=Math.round(W*s), h=Math.round(H*s);
+    const c=document.createElement('canvas'); c.width=w; c.height=h;
+    const ctx=c.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); ctx.drawImage(bmp,0,0,w,h);
+    out=c.toDataURL('image/jpeg', q);
+    if(out.length < 700000) return { data:out, w, h };   // Firestore 문서 1MB 제한 안쪽으로
+    if(q>0.6) q-=0.1; else { max=Math.round(max*0.8); q=0.75; }
+  }
+  throw new Error('too big');
+}
+
+// ===== 보내기 =====
+function newMsg(extra){
+  const ref = doc(collection(fs,'rooms',roomId,'messages'));
+  return { ref, m:{ id:ref.id, uid, name:me.name, role:me.role, lang:me.lang, text:'', kind:'text', ts:Date.now(), src:null, tr:{}, ...extra } };
+}
+async function send(){
+  const input=$('input'); const text=input.value.trim();
+  if(!text || !roomId || !uid) return;
+  input.value=''; autosize();
+  const { ref, m } = newMsg({ text:text.slice(0,4000) });
+  await writeMsg(ref, m);
+}
+async function sendSticker(id){
+  if(!roomId || !uid) return;
+  const { ref, m } = newMsg({ kind:'sticker', sticker:id });
+  await writeMsg(ref, m);
+}
+async function sendPhotos(files){
+  if(!roomId || !uid) return;
+  for(const file of files){
+    if(!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)) continue;
+    showNotice(t('sendingPhoto'));
+    let img;
+    try{ img = await compress(file); }
+    catch(e){ console.error(e); showNotice(t('photoFail'), true); continue; }
+    const imgRef = doc(collection(fs,'rooms',roomId,'images'));
+    const { ref, m } = newMsg({ kind:'image', imageId:imgRef.id, w:img.w, h:img.h, preview:img.data });
+    imgCache.set(imgRef.id, img.data);
+    m.imgRef=imgRef; m.imgData=img.data;
+    await writeMsg(ref, m);
+  }
+  showNotice(t('tap'));
+}
+async function writeMsg(ref, m){
+  try{
+    if(m.kind==='image' && !m.imgSaved){
+      await setDoc(m.imgRef, { uid:m.uid, data:m.imgData, w:m.w, h:m.h, ts:m.ts });
+      m.imgSaved=true;
+    }
+    const body = { uid:m.uid, name:m.name, role:m.role, lang:m.lang, kind:m.kind, text:m.text, ts:m.ts, at:serverTimestamp(), src:null, tr:{} };
+    if(m.kind==='sticker') body.sticker=m.sticker;
+    if(m.kind==='image'){ body.imageId=m.imageId; body.w=m.w; body.h=m.h; }
+    await setDoc(ref, body);
+  }catch(e){
+    console.error(e);
+    m.local=true; m.ref=ref; if(!localPending.includes(m)) localPending.push(m); render(); return;
+  }
+  const i=localPending.indexOf(m); if(i>=0) localPending.splice(i,1);
+  // 글자 메시지만 상대 언어로 바로 번역해서 저장
+  if(m.kind==='text') translateAndSave(m, me.lang==='ko'?'vi':'ko');
+}
+
+// ===== 스티커·이모지 패널 =====
+const TABS = [{ key:'st', icon:'🐰' }, ...Object.keys(EMOJI).map(k=>({ key:k, icon:k }))];
+let curTab='st';
+function drawPanel(){
+  const tabs=$('tabs'); tabs.textContent='';
+  for(const tb of TABS){ const b=document.createElement('button'); b.textContent=tb.icon; b.className=tb.key===curTab?'on':'';
+    b.onclick=()=>{ curTab=tb.key; drawPanel(); }; tabs.appendChild(b); }
+  const g=$('grid'); g.textContent=''; g.scrollTop=0;
+  if(curTab==='st'){
+    g.className='grid st';
+    for(const s of STICKERS){
+      const b=document.createElement('button'); b.innerHTML=stickerSvg(s.id);
+      const l=document.createElement('span'); l.textContent=s[me.lang]||s.ko; b.appendChild(l);
+      b.onclick=()=>{ sendSticker(s.id); togglePanel(false); };
+      g.appendChild(b);
+    }
+  } else {
+    g.className='grid em';
+    for(const e of EMOJI[curTab]){
+      const b=document.createElement('button'); b.textContent=e;
+      b.onclick=()=>{ const i=$('input'); const p=i.selectionStart ?? i.value.length;
+        i.value=i.value.slice(0,p)+e+i.value.slice(i.selectionEnd ?? p); i.selectionStart=i.selectionEnd=p+e.length; autosize(); };
+      g.appendChild(b);
+    }
+  }
+}
+function togglePanel(force){
+  const show = force ?? !$('panel').classList.contains('show');
+  $('panel').classList.toggle('show', show); $('emojiBtn').classList.toggle('on', show);
+  if(show){ drawPanel(); $('input').blur(); }
+  const list=$('list'); list.scrollTop=list.scrollHeight;
+}
+$('emojiBtn').onclick=()=>togglePanel();
+$('input').addEventListener('focus',()=>{ if(curTab==='st') togglePanel(false); });
+$('photoBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=e=>{ const f=[...e.target.files]; e.target.value=''; togglePanel(false); sendPhotos(f.slice(0,10)); };
+function retrySend(m){ m.local=false; writeMsg(m.ref, m); render(); }
+$('send').onclick=send;
+$('input').addEventListener('keydown',e=>{ if(e.key==='Enter' && !e.shiftKey && !e.isComposing && !/Mobi|Android/i.test(navigator.userAgent)){ e.preventDefault(); send(); } });
+function autosize(){ const i=$('input'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; }
+$('input').addEventListener('input',autosize);
+
+// ===== 방 입장 =====
+async function joinRoom(){
+  roomId = await sha256('couple-chat|'+me.pass);
+  if(unsubMsgs) unsubMsgs();
+  showNotice(t('connecting'));
+  await setDoc(doc(fs,'rooms',roomId,'members',uid), { name:me.name, lang:me.lang, role:me.role, seen:Date.now() }).catch(()=>{});
+  const q = query(collection(fs,'rooms',roomId,'messages'), orderBy('ts'), limitToLast(300));
+  unsubMsgs = onSnapshot(q, snap=>{
+    msgs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(m=>typeof m.text==='string' && typeof m.ts==='number');
+    showNotice(t('tap')); render();
+  }, err=>{ console.error(err); showNotice(t('offline'), true); });
+}
+
+// ===== 설정 화면 =====
+function setSeg(id, v){ for(const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v===v); }
+let draft={};
+for(const id of ['segLang','segRole']) $(id).addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  draft[id==='segLang'?'lang':'role']=b.dataset.v; setSeg(id,b.dataset.v);
+});
+function openSetup(err){
+  draft={lang:me.lang, role:me.role};
+  setSeg('segLang',draft.lang); setSeg('segRole',draft.role);
+  $('fName').value=me.name; $('fPass').value=me.pass; $('setupErr').textContent=err||'';
+  $('setup').classList.add('show');
+}
+$('settingsBtn').onclick=()=>openSetup();
+$('setupForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const name=$('fName').value.trim(), pass=$('fPass').value;
+  if(!draft.lang||!draft.role||!name||!pass){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
+  $('enterBtn').disabled=true; $('setupErr').textContent='';
+  const prevPass=me.pass; me.pass=pass;
+  try{ await api({check:true}); }
+  catch(err){
+    me.pass=prevPass; $('enterBtn').disabled=false;
+    $('setupErr').textContent = UI[draft.lang][err.code==='pass'?'wrongPass':'serverErr']; return;
+  }
+  Object.assign(me,{lang:draft.lang, role:draft.role, name});
+  for(const k of ['lang','role','name','pass']) store.set(k, me[k]);
+  $('enterBtn').disabled=false; $('setup').classList.remove('show');
+  applyUi(); await joinRoom();
+});
+function applyUi(){
+  document.documentElement.lang=me.lang;
+  $('input').placeholder=t('ph'); render();
+}
+
+// ===== 시작 =====
+applyUi();
+if(auth){
+  showNotice(t('connecting'));
+  onAuthStateChanged(auth, async u=>{
+    if(!u){ signInAnonymously(auth).catch(e=>{ console.error(e); showNotice(t('offline'),true); }); return; }
+    uid=u.uid;
+    if(me.role && me.name && me.pass) joinRoom(); else openSetup();
+  });
+}
+</script>
+</body>
+</html>

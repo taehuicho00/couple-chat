@@ -1,0 +1,8 @@
+{
+  "name": "couple-translate-chat",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "한국어 ↔ 베트남어 자동 번역 커플 채팅",
+  "engines": { "node": ">=18" }
+}
