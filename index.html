@@ -273,8 +273,13 @@ async function loadPack(code){
   if(packState.get(id)==='loading') return 'loading';
   packState.set(id,'loading');
   try{
-    const res = await fetch(`./packs/${id}.bin`);
-    if(!res.ok){ packState.delete(id); return res.status===404 ? 'bad' : 'fail'; }
+    // 사이트에 아직 반영되지 않았으면(배포가 늦을 때) 저장소 원본에서 바로 받아 온다
+    let res=null, trouble=false;
+    for(const u of [`./packs/${id}.bin`, `https://raw.githubusercontent.com/taehuicho00/couple-chat/main/packs/${id}.bin`]){
+      try{ const r = await fetch(u, { cache:'no-cache' }); if(r.ok){ res=r; break; } if(r.status!==404) trouble=true; }
+      catch{ trouble=true; }
+    }
+    if(!res){ packState.delete(id); return trouble ? 'fail' : 'bad'; }
     const buf = new Uint8Array(await res.arrayBuffer());
     let plain;
     try{
