@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>우리 둘 💕</title>
 <meta name="theme-color" content="#ff6b8a">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/icon-192.png">
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="우리 둘">
@@ -138,24 +138,26 @@
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-ai.js";
+import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app-check.js";
 import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, onSnapshot, query, orderBy, limitToLast, serverTimestamp }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "/stickers.js";
+  from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "./stickers.js";
 
 // ===== 화면 문구 =====
 const UI = {
   ko:{ph:'메시지 입력…',translating:'번역 중…',failed:'번역 실패 · 눌러서 다시',sendFail:'전송 실패 · 눌러서 다시',
       empty:'아직 메시지가 없어요.\n내가 한국어로 보내면 상대는 베트남어로 봐요 💌',
       tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
-      wrongPass:'비밀번호가 틀렸어요',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
+      wrongPass:'비밀번호가 틀렸어요',shortPass:'방 비밀번호는 8자 이상으로 해 주세요 (둘이 똑같이 입력해야 같은 방이에요)',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
       today:'오늘',enter:'입장 · Vào',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
       save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
   vi:{ph:'Nhắn tin…',translating:'Đang dịch…',failed:'Dịch lỗi · chạm để thử lại',sendFail:'Gửi lỗi · chạm để thử lại',
       empty:'Chưa có tin nhắn.\nEm nhắn tiếng Việt, anh ấy sẽ đọc bằng tiếng Hàn 💌',
       tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
-      wrongPass:'Sai mật khẩu rồi',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
+      wrongPass:'Sai mật khẩu rồi',shortPass:'Mật khẩu phòng cần ít nhất 8 ký tự (hai người nhập giống nhau mới vào cùng phòng nhé)',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
       today:'Hôm nay',enter:'Vào · 입장',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
       save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
 };
@@ -173,17 +175,29 @@ const t = k => (UI[me.lang]||UI.ko)[k];
 
 // ===== Firebase =====
 let fb, auth, fs, uid=null, roomId=null, unsubMsgs=null;
-// 접속 정보는 서버(/api/config)가 Vercel 환경변수에서 읽어 준다. 코드 수정 불필요.
-async function loadConfig(){
-  try{ const r=await fetch('/api/config'); if(r.ok) return await r.json(); }catch{}
-  return window.FIREBASE_CONFIG || null;   // 로컬 테스트용 예비 경로
-}
-const fbConfig = await loadConfig();
+// Firebase 접속 정보 (공개돼도 되는 값. 보안은 방 비밀번호 + Firestore 규칙 + 앱 체크가 담당)
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDH6Xa5_7113SFYd_DNBsrmkynN3aVFHPs",
+  authDomain: "couple-chat-39ee8.firebaseapp.com",
+  projectId: "couple-chat-39ee8",
+  storageBucket: "couple-chat-39ee8.firebasestorage.app",
+  messagingSenderId: "406570686453",
+  appId: "1:406570686453:web:f92395cbb5ce0a921972bc"
+};
+// 앱 체크(reCAPTCHA v3) 사이트 키: 우리 사이트에서 온 요청만 Gemini를 쓸 수 있게 막아 줌
+const RECAPTCHA_SITE_KEY = "RECAPTCHA_SITE_KEY_HERE";
+const MODEL = "gemini-3.8-flash";
+let model = null;
 try {
-  if(!fbConfig || !fbConfig.apiKey) throw new Error('no config');
-  fb = initializeApp(fbConfig);
+  fb = initializeApp(FIREBASE_CONFIG);
+  if(RECAPTCHA_SITE_KEY && !RECAPTCHA_SITE_KEY.includes('HERE'))
+    initializeAppCheck(fb, { provider: new ReCaptchaV3Provider(RECAPTCHA_SITE_KEY), isTokenAutoRefreshEnabled: true });
   auth = getAuth(fb); fs = getFirestore(fb);
-} catch(e) { showNotice('Vercel 환경변수 FIREBASE_CONFIG 를 확인해 주세요', true); }
+  model = getGenerativeModel(getAI(fb, { backend: new GoogleAIBackend() }), {
+    model: MODEL,
+    generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
+  });
+} catch(e) { console.error(e); showNotice('Firebase 연결 설정을 확인해 주세요', true); }
 
 // ===== 상태 =====
 let msgs = [];                 // 화면에 보이는 메시지
@@ -206,28 +220,54 @@ function contextBefore(ts){
   }).join('\n');
 }
 
-// ===== 번역 서버 호출 =====
-async function api(body){
-  const r = await fetch('/api/translate', {
-    method:'POST', headers:{'content-type':'application/json','x-chat-pass':me.pass},
-    body: JSON.stringify(body)
-  });
-  if(r.status===401) throw Object.assign(new Error('pass'),{code:'pass'});
-  if(!r.ok) throw Object.assign(new Error('server'),{code:'server'});
-  return r.json();
+// ===== 번역 (Gemini) =====
+function buildPrompt(text, target, senderRole, context){
+  const viRule = senderRole==='f'
+    ? 'In Vietnamese the sender (girlfriend) refers to herself as "em" and calls him "anh".'
+    : senderRole==='m'
+    ? 'In Vietnamese the sender (boyfriend) refers to himself as "anh" and calls her "em".'
+    : 'In Vietnamese use the couple pronouns "anh"/"em" naturally.';
+  return `You translate private chat messages between a Korean–Vietnamese couple who are lovers.
+Translate the message into ${target==='ko'?'Korean':'Vietnamese'}.
+
+Tone rules (very important):
+- Sound like a real couple texting each other: warm, casual, affectionate, natural. Never stiff, formal, or textbook-like.
+- Korean: casual 반말 the way Korean couples text (e.g. "뭐해?", "보고 싶어", "밥 먹었어?", "잘 자~"). No 존댓말 (-요/-습니다) unless the original is clearly polite or joking. Natural endings like ~어/~야/~지/~네.
+- Vietnamese: ${viRule} Use natural texting particles where they fit (nhé, nha, à, ơi, hen, đó, nè). Avoid formal words.
+- Translate the meaning and feeling, not word by word. Keep emoji and line breaks. Convert laughter naturally (ㅋㅋ/ㅎㅎ ↔ haha/hihi).
+- Keep pet names natural (자기야 ↔ anh yêu/em yêu, 여보 ↔ vợ ơi/chồng ơi) but never add affection that is not in the original.
+- If the message is already in the target language, return it unchanged.
+
+Recent conversation (context only, do not translate):
+${context||'(none)'}
+
+Message from the ${roleWord(senderRole)}:
+<<<
+${text}
+>>>
+
+Return ONLY JSON: {"src":"<ISO 639-1 code of the original>","text":"<translation>"}`;
+}
+async function translate(text, target, senderRole, context){
+  if(!model) throw new Error('no model');
+  const res = await model.generateContent(buildPrompt(text.slice(0,2000), target, senderRole, context));
+  const raw = res.response.text();
+  let out;
+  try{ out = JSON.parse((raw.match(/\{[\s\S]*\}/)||[raw])[0]); }catch{ out = { src:'', text: raw.trim() }; }
+  return { src:String(out.src||'').slice(0,2).toLowerCase(), text:String(out.text||'').trim() };
 }
 async function translateAndSave(m, target){
   if(inflight.has(m.id+target)) return;
   inflight.add(m.id+target); failed.delete(m.id); render();
   try{
-    const r = await api({ text:m.text, target, senderRole:m.role, context:contextBefore(m.ts) });
+    const r = await translate(m.text, target, m.role, contextBefore(m.ts));
     if(!r.text) throw new Error('empty');
     const upd = { ['tr.'+target]: r.text };
     if(!m.src && r.src) upd.src = r.src;
     await updateDoc(doc(fs,'rooms',roomId,'messages',m.id), upd);
   }catch(e){
+    console.error('번역 실패', e);
     failed.add(m.id);
-    if(e.code==='pass'){ openSetup(t('wrongPass')); }
   }finally{ inflight.delete(m.id+target); render(); }
 }
 
@@ -477,12 +517,9 @@ $('setupForm').addEventListener('submit', async e=>{
   const name=$('fName').value.trim(), pass=$('fPass').value;
   if(!draft.lang||!draft.role||!name||!pass){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
   $('enterBtn').disabled=true; $('setupErr').textContent='';
-  const prevPass=me.pass; me.pass=pass;
-  try{ await api({check:true}); }
-  catch(err){
-    me.pass=prevPass; $('enterBtn').disabled=false;
-    $('setupErr').textContent = UI[draft.lang][err.code==='pass'?'wrongPass':'serverErr']; return;
-  }
+  // 비밀번호가 곧 방 주소라서, 너무 짧으면 남이 추측할 수 있음
+  if(pass.length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
+  me.pass=pass;
   Object.assign(me,{lang:draft.lang, role:draft.role, name});
   for(const k of ['lang','role','name','pass']) store.set(k, me[k]);
   $('enterBtn').disabled=false; $('setup').classList.remove('show');
