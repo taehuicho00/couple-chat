@@ -82,6 +82,14 @@
   /* 채팅 안의 스티커·사진 */
   .sticker{width:124px;height:124px;cursor:default}
   .sticker svg{width:100%;height:100%}
+  .sticker img{width:100%;height:100%;object-fit:contain;display:block}
+  .sticker.wait{display:flex;align-items:center;justify-content:center;font-size:34px;border-radius:24px;background:var(--line);animation:pulse 1.2s infinite}
+  .grid.st button img{width:100%;height:auto;display:block}
+  .packhint{grid-column:1/-1;font-size:12.5px;color:var(--sub);line-height:1.55;padding:6px 4px 0}
+  .packadd{grid-column:1/-1;display:flex;gap:6px;padding:6px 2px 2px}
+  .packadd input{flex:1;min-width:0;padding:9px 12px}
+  .grid .packadd button{background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:14px;padding:0 16px;border-radius:12px}
+  .grid .packadd button:disabled{opacity:.5}
   .photo{display:block;border-radius:16px;max-width:min(240px,62vw);max-height:320px;object-fit:cover;cursor:zoom-in;
     background:var(--line);border:1px solid var(--line)}
   .photo.loading{width:200px;height:200px;animation:pulse 1.2s infinite}
@@ -150,7 +158,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebas
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
 import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-ai.js";
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app-check.js";
-import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, onSnapshot, query, orderBy, limitToLast, serverTimestamp }
+import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, onSnapshot, query, orderBy, limitToLast, serverTimestamp, arrayUnion }
   from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
 import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "./stickers.js";
 
@@ -160,13 +168,13 @@ const UI = {
       empty:'아직 메시지가 없어요.\n내가 한국어로 보내면 상대는 베트남어로 봐요 💌',
       tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',alone:'⚠️ 아직 이 방에 혼자예요 · 방 확인번호 {code} · 상대 화면의 번호와 같아야 같은 방이에요',together:'💕 {names} 님과 같은 방이에요 · 말풍선을 누르면 원문/번역을 같이 볼 수 있어요',count:'참여자 {n}명',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
       wrongPass:'비밀번호가 틀렸어요',shortPass:'방 비밀번호는 8자 이상으로 해 주세요 (둘이 똑같이 입력해야 같은 방이에요)',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
-      today:'오늘',enter:'입장 · Vào',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
+      today:'오늘',enter:'입장 · Vào',packEmpty:'사진 이모티콘이 아직 없어요. 받은 코드를 아래에 붙여넣고 추가를 누르면 두 사람 모두에게 생겨요.',packPh:'이모티콘 코드 붙여넣기',packAdd:'추가',packOk:'📸 사진 이모티콘 {n}개가 추가됐어요 · 🐰 버튼 안의 📸 탭에 있어요',packBad:'코드가 올바르지 않아요. 전체를 복사했는지 확인해 주세요',packFail:'이모티콘을 불러오지 못했어요. 잠시 후 다시 해 주세요',photoSticker:'사진 이모티콘',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
       save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
   vi:{ph:'Nhắn tin…',translating:'Đang dịch…',failed:'Dịch lỗi · chạm để thử lại',sendFail:'Gửi lỗi · chạm để thử lại',
       empty:'Chưa có tin nhắn.\nEm nhắn tiếng Việt, anh ấy sẽ đọc bằng tiếng Hàn 💌',
       tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',alone:'⚠️ Phòng này chưa có ai khác · Mã phòng {code} · phải trùng với số bên kia mới là cùng phòng',together:'💕 Đang cùng phòng với {names} · Chạm vào tin nhắn để xem bản gốc và bản dịch',count:'{n} người',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
       wrongPass:'Sai mật khẩu rồi',shortPass:'Mật khẩu phòng cần ít nhất 8 ký tự (hai người nhập giống nhau mới vào cùng phòng nhé)',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
-      today:'Hôm nay',enter:'Vào · 입장',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
+      today:'Hôm nay',enter:'Vào · 입장',packEmpty:'Chưa có sticker ảnh. Dán mã nhận được vào bên dưới rồi bấm Thêm, cả hai sẽ cùng có.',packPh:'Dán mã sticker',packAdd:'Thêm',packOk:'📸 Đã thêm {n} sticker ảnh · xem ở tab 📸 trong nút 🐰',packBad:'Mã không đúng. Kiểm tra đã sao chép đủ chưa nhé',packFail:'Không tải được sticker. Thử lại sau nhé',photoSticker:'Sticker ảnh',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
       save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
 };
 const $ = id => document.getElementById(id);
@@ -234,14 +242,100 @@ function showRoomStatus(){
   if(others.length>1) text += ' · ' + t('count').replace('{n}', others.length+1);
   showNotice(text);
 }
-function showNotice(text, warn){ const n=$('notice'); n.textContent=text||''; n.className='notice'+(warn?' warn':''); n.style.display=text?'':'none'; }
+let baseNotice={ text:'', warn:false }, flashTimer=null;
+function paintNotice(text, warn){ const n=$('notice'); n.textContent=text||''; n.className='notice'+(warn?' warn':''); n.style.display=text?'':'none'; }
+function showNotice(text, warn){ baseNotice={ text, warn }; if(!flashTimer) paintNotice(text, warn); }
+// 몇 초만 보여 주는 안내. 끝나면 원래 안내(방 상태 등)로 돌아간다
+function flash(text, warn){
+  paintNotice(text, warn); clearTimeout(flashTimer);
+  flashTimer=setTimeout(()=>{ flashTimer=null; paintNotice(baseNotice.text, baseNotice.warn); }, 6000);
+}
 const roleWord = r => r==='f'?'Girlfriend':r==='m'?'Boyfriend':'Partner';
 function contextBefore(ts){
   return msgs.filter(m=>m.ts<ts).slice(-6).map(m=>{
-    const body = m.kind==='image' ? '[sent a photo]' : m.kind==='sticker' ? `[sent a sticker: "${stickerLabel(m.sticker,'ko')}"]` : m.text;
+    const body = m.kind==='image' ? '[sent a photo]' : m.kind==='sticker' ? stickerText(m) : m.text;
     return `${roleWord(m.role)}: ${body}`;
   }).join('\n');
 }
+
+// ===== 사진 이모티콘 묶음 =====
+// 묶음 파일(packs/<id>.bin)은 사이트와 함께 올라가지만 AES-256-GCM으로 암호화돼 있다.
+// 여는 열쇠가 든 '코드'는 이 기기와 방 안(참여자 문서)에만 저장되므로, 방에 들어온 사람만 그림을 볼 수 있다.
+const PACK_RE = /^([a-f0-9]{8,32})\.([A-Za-z0-9_-]{43})$/;
+const packs = new Map();        // 묶음 id -> { stickers:[{id,data,ko,vi}] }
+const packState = new Map();    // 묶음 id -> 'loading' | 'ok'
+let roomPacks = new Set();      // 지금 방에서 쓰는 묶음 id (넣은 순서)
+const b64u = s => Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/') + '='.repeat((4 - s.length%4)%4)), c=>c.charCodeAt(0));
+async function loadPack(code){
+  const m = PACK_RE.exec(String(code||'').trim()); if(!m) return 'bad';
+  const [, id, key] = m;
+  if(packState.get(id)==='ok') return packs.get(id).key===key ? 'ok' : 'bad';
+  if(packState.get(id)==='loading') return 'loading';
+  packState.set(id,'loading');
+  try{
+    const res = await fetch(`./packs/${id}.bin`);
+    if(!res.ok){ packState.delete(id); return res.status===404 ? 'bad' : 'fail'; }
+    const buf = new Uint8Array(await res.arrayBuffer());
+    let plain;
+    try{
+      const k = await crypto.subtle.importKey('raw', b64u(key), 'AES-GCM', false, ['decrypt']);
+      plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:buf.slice(0,12) }, k, buf.slice(12));
+    }catch{ packState.delete(id); return 'bad'; }       // 열쇠가 틀리면 여기서 걸린다
+    const data = JSON.parse(new TextDecoder().decode(plain));
+    const list = (Array.isArray(data.stickers) ? data.stickers : [])
+      .filter(s => s && /^[a-z0-9]{1,16}$/.test(s.id) && typeof s.data==='string' && s.data.length < 400000
+                   && /^data:image\/(webp|png);base64,[A-Za-z0-9+/=]+$/.test(s.data))
+      .slice(0,60).map(s => ({ id:s.id, data:s.data, ko:String(s.ko||'').slice(0,30), vi:String(s.vi||'').slice(0,30) }));
+    if(!list.length){ packState.delete(id); return 'bad'; }
+    packs.set(id, { stickers:list, key }); packState.set(id,'ok');
+    return 'ok';
+  }catch(e){ console.error('이모티콘 묶음 불러오기 실패', e); packState.delete(id); return 'fail'; }
+}
+const packKey = () => 'packs:' + roomId;
+function savedCodes(){ try{ return JSON.parse(store.get(packKey())||'[]').filter(c=>typeof c==='string' && PACK_RE.test(c)); }catch{ return []; } }
+function saveCode(code){ const s=new Set(savedCodes()); if(s.has(code)) return; s.add(code); store.set(packKey(), JSON.stringify([...s])); }
+// 이 방에서 묶음을 쓴다: 불러와서 목록에 넣고 화면을 다시 그린다
+async function usePack(code){
+  const rid = roomId;
+  const r = await loadPack(code);
+  if(r==='ok' && rid===roomId){
+    roomPacks.add(PACK_RE.exec(code.trim())[1]); saveCode(code.trim());
+    render(); if($('panel').classList.contains('show')) drawPanel();
+  }
+  return r;
+}
+// 코드로 추가: 내 참여자 문서에 적어 두면 같은 방의 상대 기기에도 자동으로 생긴다
+async function addPack(code){
+  code = String(code||'').trim();
+  const r = await usePack(code);
+  if(r!=='ok') return r;
+  if(roomId && uid) setDoc(doc(fs,'rooms',roomId,'members',uid), { packs: arrayUnion(code) }, { merge:true }).catch(e=>console.error(e));
+  flash(t('packOk').replace('{n}', packs.get(PACK_RE.exec(code)[1]).stickers.length));
+  return 'ok';
+}
+function packSticker(ref){
+  const m = /^p:([a-f0-9]{8,32}):([a-z0-9]{1,16})$/.exec(ref||''); if(!m) return null;
+  const pk = packs.get(m[1]); return pk ? (pk.stickers.find(s=>s.id===m[2]) || null) : null;
+}
+const isPackSticker = m => typeof m.sticker==='string' && m.sticker.startsWith('p:');
+function stickerText(m){
+  if(isPackSticker(m)){ const s=packSticker(m.sticker); return '[sent a photo sticker' + (s && s.ko ? `: "${s.ko}"` : '') + ']'; }
+  return `[sent a sticker: "${stickerLabel(m.sticker,'ko')}"]`;
+}
+// 주소 뒤에 #pack=코드 가 붙어 있으면 꺼내고, 열쇠가 주소창·방문 기록에 남지 않게 바로 지운다
+function takeHashCode(){
+  const m = /^#pack=(.+)$/.exec(location.hash||''); if(!m) return null;
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch{}
+  let c=''; try{ c = decodeURIComponent(m[1]).trim(); }catch{}
+  return PACK_RE.test(c) ? c : null;
+}
+let pendingPack = takeHashCode();
+function addPending(){
+  if(!pendingPack || !roomId || !uid) return;
+  const c = pendingPack; pendingPack = null;
+  addPack(c).then(r=>{ if(r!=='ok') flash(t(r==='bad'?'packBad':'packFail'), true); });
+}
+window.addEventListener('hashchange', ()=>{ const c = takeHashCode(); if(c){ pendingPack = c; addPending(); } });
 
 // ===== 번역 (Gemini) =====
 function buildPrompt(text, target, senderRole, context){
@@ -384,6 +478,12 @@ function render(){
 // ===== 스티커·사진 그리기 =====
 function stickerEl(m){
   const d=document.createElement('div'); d.className='sticker';
+  if(isPackSticker(m)){
+    const s = packSticker(m.sticker);
+    if(s){ const im=document.createElement('img'); im.src=s.data; im.alt=s[me.lang]||s.ko||t('photoSticker'); d.title=im.alt; d.appendChild(im); }
+    else { d.classList.add('wait'); d.textContent='📸'; }     // 아직 묶음을 못 불러온 경우
+    return d;
+  }
   d.innerHTML = stickerSvg(m.sticker) || '';   // 우리가 만든 SVG만 넣음 (외부 입력 아님)
   d.title = stickerLabel(m.sticker, me.lang);
   return d;
@@ -488,7 +588,7 @@ async function writeMsg(ref, m){
 }
 
 // ===== 스티커·이모지 패널 =====
-const TABS = [{ key:'st', icon:'🐰' }, ...Object.keys(EMOJI).map(k=>({ key:k, icon:k }))];
+const TABS = [{ key:'st', icon:'🐰' }, { key:'ph', icon:'📸' }, ...Object.keys(EMOJI).map(k=>({ key:k, icon:k }))];
 let curTab='st';
 function drawPanel(){
   const tabs=$('tabs'); tabs.textContent='';
@@ -503,6 +603,37 @@ function drawPanel(){
       b.onclick=()=>{ sendSticker(s.id); togglePanel(false); };
       g.appendChild(b);
     }
+  } else if(curTab==='ph'){
+    // 사진 이모티콘 (방에 추가된 묶음)
+    g.className='grid st';
+    let n=0;
+    for(const id of roomPacks){
+      const pk=packs.get(id); if(!pk) continue;
+      for(const s of pk.stickers){
+        n++;
+        const b=document.createElement('button');
+        const im=document.createElement('img'); im.src=s.data; im.alt=s[me.lang]||s.ko||t('photoSticker'); b.appendChild(im);
+        const lb=s[me.lang]||s.ko; if(lb){ const l=document.createElement('span'); l.textContent=lb; b.appendChild(l); }
+        b.onclick=()=>{ sendSticker(`p:${id}:${s.id}`); togglePanel(false); };
+        g.appendChild(b);
+      }
+    }
+    if(!n){ const h=document.createElement('div'); h.className='packhint'; h.textContent=t('packEmpty'); g.appendChild(h); }
+    const f=document.createElement('form'); f.className='packadd';
+    const inp=document.createElement('input'); inp.type='text'; inp.placeholder=t('packPh');
+    inp.autocomplete='off'; inp.autocapitalize='off'; inp.spellcheck=false; inp.setAttribute('autocorrect','off');
+    const btn=document.createElement('button'); btn.type='submit'; btn.textContent=t('packAdd');
+    f.append(inp, btn);
+    f.onsubmit=async e=>{
+      e.preventDefault();
+      const raw=inp.value.trim(); if(!raw) return;
+      const mm=/([a-f0-9]{8,32}\.[A-Za-z0-9_-]{43})/.exec(raw);   // 링크 전체를 붙여넣어도 코드만 뽑아 쓴다
+      btn.disabled=true;
+      const r = mm ? await addPack(mm[1]) : 'bad';
+      btn.disabled=false;
+      if(r==='ok'){ curTab='ph'; drawPanel(); } else flash(t(r==='bad'?'packBad':'packFail'), true);
+    };
+    g.appendChild(f);
   } else {
     g.className='grid em';
     for(const e of EMOJI[curTab]){
@@ -520,7 +651,7 @@ function togglePanel(force){
   const list=$('list'); list.scrollTop=list.scrollHeight;
 }
 $('emojiBtn').onclick=()=>togglePanel();
-$('input').addEventListener('focus',()=>{ if(curTab==='st') togglePanel(false); });
+$('input').addEventListener('focus',()=>{ if(curTab==='st' || curTab==='ph') togglePanel(false); });
 $('photoBtn').onclick=()=>$('fileInput').click();
 $('fileInput').onchange=e=>{ const f=[...e.target.files]; e.target.value=''; togglePanel(false); sendPhotos(f.slice(0,10)); };
 function retrySend(m){ m.local=false; writeMsg(m.ref, m); render(); }
@@ -536,9 +667,15 @@ async function joinRoom(){
   if(unsubMembers) unsubMembers();
   // 방을 바꾸면 이전 방 내용은 화면에서 비운다
   msgs=[]; roomMembers=[]; membersLoaded=false; localPending.length=0; failed.clear(); showBoth.clear(); trQueue.length=0; trQueued.clear();
+  roomPacks = new Set();
   render();
   showNotice(t('connecting'));
-  await setDoc(doc(fs,'rooms',roomId,'members',uid), { name:me.name, lang:me.lang, role:me.role, seen:Date.now() }).catch(()=>{});
+  // 이 기기에 저장된 사진 이모티콘 코드를 불러오고, 방에도 다시 적어 둔다 (merge: 기존 내용은 유지)
+  const mine = savedCodes();
+  for(const c of mine) usePack(c);
+  await setDoc(doc(fs,'rooms',roomId,'members',uid),
+    { name:me.name, lang:me.lang, role:me.role, seen:Date.now(), ...(mine.length ? { packs: arrayUnion(...mine) } : {}) },
+    { merge:true }).catch(()=>{});
   const q = query(collection(fs,'rooms',roomId,'messages'), orderBy('ts'), limitToLast(300));
   unsubMsgs = onSnapshot(q, snap=>{
     msgs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(m=>typeof m.text==='string' && typeof m.ts==='number');
@@ -549,7 +686,13 @@ async function joinRoom(){
   unsubMembers = onSnapshot(collection(fs,'rooms',roomId,'members'), snap=>{
     roomMembers = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     membersLoaded = true; showRoomStatus();
+    // 방의 누군가가 추가한 사진 이모티콘은 내 기기에도 자동으로 불러온다
+    for(const mb of roomMembers) for(const c of (Array.isArray(mb.packs) ? mb.packs : []).slice(0,30)){
+      const mm = typeof c==='string' && PACK_RE.exec(c);
+      if(mm && !roomPacks.has(mm[1])) usePack(c);
+    }
   }, err=>console.error(err));
+  addPending();     // 링크(#pack=코드)로 들어온 경우
 }
 
 // ===== 설정 화면 =====
