@@ -173,7 +173,7 @@
       <div class="hint" id="inviteInfo"></div>
       <input id="inviteUrl" readonly hidden aria-label="invite link">
     </div>
-    <div class="ver">v7</div>
+    <div class="ver">v8</div>
   </form>
 </div>
 
@@ -716,7 +716,7 @@ function autosize(){ const i=$('input'); i.style.height='auto'; i.style.height=M
 $('input').addEventListener('input',autosize);
 
 // ===== 방 입장 =====
-let joinSeq=0;
+let joinSeq=0, moveHops=0;   // moveHops: 방 합치기 표식을 따라 옮긴 횟수 (서로 가리키는 표식이 있어도 맴돌지 않게)
 async function joinRoom(){
   const seq = ++joinSeq;
   // 초대 링크로 들어온 기기는 받은 방 주소를 그대로 쓰고, 아니면 비밀번호로 방 주소를 만든다
@@ -745,7 +745,15 @@ async function joinRoom(){
   }, err=>{ console.error(err); showNotice(t('offline'), true); });
   // 이 방에 누가 들어와 있는지 (상대가 같은 비밀번호로 들어왔는지 바로 알 수 있게)
   unsubMembers = onSnapshot(collection(fs,'rooms',roomId,'members'), snap=>{
-    roomMembers = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    const all = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    // 방 합치기: 이 방에 '_moved' 표식 문서가 있으면 거기 적힌 방으로 자동으로 옮겨 간다.
+    // 참여자 문서는 자기 uid 이름으로만 쓸 수 있어서(firestore.rules) 이 표식은 앱 사용자가 만들 수 없고,
+    // 프로젝트 주인이 Firebase 콘솔에서만 만들 수 있다. 옮겨 간 방은 이 기기에 저장해 다음부터는 바로 그 방으로 들어간다.
+    const mv = all.find(m=>m.id==='_moved');
+    if(mv && /^[a-f0-9]{64}$/.test(mv.moveTo||'') && mv.moveTo!==roomId && moveHops<3){
+      moveHops++; me.room = mv.moveTo; store.set('room', me.room); joinRoom(); return;
+    }
+    roomMembers = all.filter(m=>m.id!=='_moved');
     membersLoaded = true; showRoomStatus();
     // 방의 누군가가 추가한 사진 이모티콘은 내 기기에도 자동으로 불러온다
     for(const mb of roomMembers) for(const c of (Array.isArray(mb.packs) ? mb.packs : []).slice(0,30)){
@@ -811,6 +819,7 @@ $('setupForm').addEventListener('submit', async e=>{
   Object.assign(me,{lang:draft.lang, role:draft.role, name});
   for(const k of ['lang','role','name','pass','room']) store.set(k, me[k]);
   $('enterBtn').disabled=false; $('setup').classList.remove('show');
+  moveHops=0;
   applyUi(); await joinRoom();
 });
 function applyUi(){
