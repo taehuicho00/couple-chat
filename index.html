@@ -63,6 +63,8 @@
   .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;cursor:pointer;padding:6px}
   .hint{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.5}
   [hidden]{display:none!important}
+  .inapp{background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;border-radius:12px;padding:9px 12px;font-size:12px;line-height:1.55;margin-bottom:8px}
+  @media (prefers-color-scheme:dark){.inapp{background:#2a1c12;border-color:#9a5a2a;color:#fcd9b6}}
   /* 초대 링크 */
   .banner{border:1px solid var(--accent);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;text-align:center;margin-bottom:4px}
   .banner span{display:block;white-space:pre-line}
@@ -139,6 +141,8 @@
   <form class="card" id="setupForm">
     <h2>💕</h2>
     <p class="lead">한국어 ↔ Tiếng Việt</p>
+    <!-- 메신저 안에서 열렸을 때만 보인다 -->
+    <div class="inapp" id="inAppHint" hidden>💡 지금은 <b>메신저 안의 브라우저</b>예요. 메뉴(⋯ 또는 공유 버튼)에서 <b>Safari로 열기 · 다른 브라우저로 열기</b>를 눌러 거기서 쓰면 설정이 계속 남아요.<br>Bạn đang mở <b>trong ứng dụng nhắn tin</b>. Bấm menu (⋯) rồi chọn <b>Mở bằng Safari / trình duyệt</b> để cài đặt được lưu lại.</div>
     <!-- 초대 링크로 들어왔을 때만 보인다 -->
     <div class="banner" id="joinBanner" hidden><span id="joinText"></span><button type="button" id="joinCancel">초대 취소 · Hủy lời mời</button></div>
     <label id="lbLang">언어 / Ngôn ngữ</label>
@@ -169,7 +173,7 @@
       <div class="hint" id="inviteInfo"></div>
       <input id="inviteUrl" readonly hidden aria-label="invite link">
     </div>
-    <div class="ver">v6</div>
+    <div class="ver">v7</div>
   </form>
 </div>
 
@@ -372,17 +376,21 @@ function addPending(){
 // ===== 초대 링크 (#room=방 주소) =====
 // 비밀번호를 손으로 입력하다 한 글자라도 달라지면 서로 다른 방이 된다. 그래서 방 주소를 링크로 넘겨받아 그대로 들어가게 한다.
 // 링크를 눌러도 바로 방이 바뀌지는 않고, 설정 화면에서 '입장'을 눌러야 들어간다 (엉뚱한 링크로 방이 바뀌는 일 방지).
-function takeHashRoom(){
-  const m = /^#room=([a-f0-9]{64})$/.exec(location.hash||''); if(!m) return null;
-  try{ history.replaceState(null, '', location.pathname + location.search); }catch{}
-  return m[1];
+function readHashRoom(){ const m = /^#room=([a-f0-9]{64})$/.exec(location.hash||''); return m ? m[1] : null; }
+// 방 주소는 '입장'이나 '취소'를 누를 때까지 주소창에 남겨 둔다:
+// 메신저 안에서 열린 화면에서 'Safari로 열기'를 눌러도 초대가 그대로 따라가게 하려는 것. 끝나면 지운다.
+function dropInvite(){
+  inviteRoom = null;
+  if(/^#room=/.test(location.hash||'')){ try{ history.replaceState(null, '', location.pathname + location.search); }catch{} }
 }
-let inviteRoom = takeHashRoom();
+let inviteRoom = readHashRoom();
 window.addEventListener('hashchange', ()=>{
   const c = takeHashCode(); if(c){ pendingPack = c; addPending(); }
-  const r = takeHashRoom();
-  if(r){ if(r===roomId) flash(t('alreadyIn')); else { inviteRoom = r; openSetup(); } }
+  const r = readHashRoom();
+  if(r){ if(r===roomId){ dropInvite(); flash(t('alreadyIn')); } else { inviteRoom = r; openSetup(); } }
 });
+// 메신저 안에서 열린 브라우저인지 (카카오톡·Zalo·메신저·인스타그램 등). 이런 화면은 Safari·Chrome과 저장 공간이 따로다.
+const IN_APP = /KAKAOTALK|Zalo|FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|NAVER\(inapp|MicroMessenger|BytedanceWebview|musical_ly|TikTok/i.test(navigator.userAgent||'');
 
 // ===== 번역 (Gemini) =====
 function buildPrompt(text, target, senderRole, context){
@@ -759,6 +767,7 @@ function openSetup(err){
   draft={lang:me.lang, role:me.role};
   setSeg('segLang',draft.lang); setSeg('segRole',draft.role);
   $('fName').value=me.name; $('fPass').value=me.pass; $('setupErr').textContent=err||'';
+  $('inAppHint').hidden = !IN_APP;
   // 초대 링크로 들어온 경우: 비밀번호 칸 대신 '초대받은 방' 안내를 보여 준다
   const inv = !!inviteRoom;
   $('joinBanner').hidden = !inv;
@@ -773,7 +782,7 @@ function openSetup(err){
   $('setup').classList.add('show');
 }
 $('settingsBtn').onclick=()=>openSetup();
-$('joinCancel').onclick=()=>{ inviteRoom=null; if(roomId) $('setup').classList.remove('show'); else openSetup(); };
+$('joinCancel').onclick=()=>{ dropInvite(); if(roomId) $('setup').classList.remove('show'); else openSetup(); };
 // 초대 링크 보내기: 휴대폰에서는 공유 창(메신저 선택)이 뜨고, 안 되면 복사한다
 $('inviteBtn').onclick=async()=>{
   if(!roomId) return;
@@ -793,11 +802,11 @@ $('setupForm').addEventListener('submit', async e=>{
   // 방을 정하는 방법은 셋 중 하나: 초대 링크 / 비밀번호 입력 / (초대로 들어와 있던 방 그대로)
   if(!draft.lang||!draft.role||!name||(!inv && !pass && !me.room)){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
   // 내 초대 링크를 내가 누른 경우: 바꿀 것이 없으니 그대로 둔다
-  if(inv && inv===roomId){ inviteRoom=null; $('setup').classList.remove('show'); flash(t('alreadyIn')); return; }
+  if(inv && inv===roomId){ dropInvite(); $('setup').classList.remove('show'); flash(t('alreadyIn')); return; }
   $('enterBtn').disabled=true; $('setupErr').textContent='';
   // 비밀번호가 곧 방 주소라서, 너무 짧으면 남이 추측할 수 있음
   if(!inv && pass && normPass(pass).length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
-  if(inv){ me.room=inv; me.pass=''; inviteRoom=null; }     // 초대받은 방으로
+  if(inv){ me.room=inv; me.pass=''; dropInvite(); }     // 초대받은 방으로
   else if(pass){ me.pass=pass; me.room=''; }               // 비밀번호로 정한 방으로
   Object.assign(me,{lang:draft.lang, role:draft.role, name});
   for(const k of ['lang','role','name','pass','room']) store.set(k, me[k]);
@@ -822,7 +831,7 @@ if(auth){
     const ready = me.role && me.name && (me.pass || me.room);
     if(ready) joinRoom();
     // 초대 링크로 열었으면 설정 화면에서 확인받는다 (이미 그 방이면 넘어간다)
-    if(inviteRoom && inviteRoom===me.room) inviteRoom=null;
+    if(inviteRoom && inviteRoom===me.room) dropInvite();
     if(inviteRoom || !ready) openSetup();
   });
 }
