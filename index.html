@@ -3,128 +3,280 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>우리 둘 💕</title>
-<meta name="theme-color" content="#ff6b8a">
+<title>우리 둘</title>
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FBF9FC">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#191B34">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="우리 둘">
+<!-- 글씨: 베트남어는 Be Vietnam Pro, 한글은 고운돋움. 못 불러오면 휴대폰 기본 글씨로 보인다 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Gowun+Dodum&display=swap" media="print" onload="this.media='all'">
 <style>
-  :root{--bg:#fff5f7;--panel:#fff;--line:#f2d9df;--text:#2a1e22;--sub:#8a7479;--me:#ff6b8a;--other:#fff;--accent:#ff6b8a}
-  @media (prefers-color-scheme:dark){:root{--bg:#17121a;--panel:#211a24;--line:#3a2d37;--text:#f3e9ee;--sub:#a8949e;--me:#e5577a;--other:#2b2230}}
+  /* ===== 색 =====
+     두 사람, 두 언어, 두 가지 색. 한국어는 쪽빛(jjok), 베트남어는 연꽃색(sen).
+     말풍선 색은 '누가 한 말인지'를, 말풍선 안 둘째 줄의 색은 '어느 나라 말인지'를 알려 준다. */
+  :root{
+    --paper:#F8F5F9; --surface:#FFFFFF; --ink:#201D38; --ink-2:#615D7B; --ink-3:#6F6B8A; --line:#E7E1EC;
+    --jjok:#3347A8; --jjok-soft:#E2E7FA; --jjok-ink:#1F2C73; --jjok-pale:#EDF0FF; --jjok-rule:rgba(31,44,115,.16); --jjok-wash:rgba(51,71,168,.08);
+    --sen:#C42863;  --sen-soft:#FBDFE9;  --sen-ink:#8A1A44;  --sen-pale:#FFD9E6;  --sen-rule:rgba(138,26,68,.16);  --sen-wash:rgba(196,40,99,.08);
+    --both:#7E3A8C; --both-solid:#7E3A8C; --both-soft:#F2E7F5; --both-ink:#5B2468; --leaf:#23805F; --warn:#A64B08; --danger:#C22B38;
+    --glass:rgba(255,255,255,.84);
+    --font:"Be Vietnam Pro","Gowun Dodum",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+  }
+  @media (prefers-color-scheme:dark){:root{
+    --paper:#131428; --surface:#1B1D38; --ink:#EEEBFA; --ink-2:#A7A3C4; --ink-3:#8683A6; --line:#2C2E50;
+    --jjok:#4759C6; --jjok-soft:#262B58; --jjok-ink:#C3CCFF; --jjok-pale:#F0F3FF; --jjok-rule:rgba(195,204,255,.22); --jjok-wash:rgba(71,89,198,.16);
+    --sen:#C2356B;  --sen-soft:#43203A;  --sen-ink:#FFBFD6;  --sen-pale:#FFDCE8;  --sen-rule:rgba(255,191,214,.22);  --sen-wash:rgba(194,53,107,.16);
+    --both:#A86BB8; --both-solid:#8B4D9C; --both-soft:#3A2446; --both-ink:#E9C9F2; --leaf:#58C9A1; --warn:#F0A45B; --danger:#FF8A93;
+    --glass:rgba(27,29,56,.84);
+  }}
+  /* 내 색(me)과 상대 색(them): 내 언어에 따라 정해진다 */
+  html{ --me:var(--jjok); --me-soft:var(--jjok-soft); --me-ink:var(--jjok-ink); --me-wash:var(--jjok-wash);
+        --them:var(--sen); --them-soft:var(--sen-soft); --them-ink:var(--sen-ink); --them-rule:var(--sen-rule); --them-wash:var(--sen-wash);
+        --gloss-on-me:var(--sen-pale) }
+  html[data-me="vi"]{ --me:var(--sen); --me-soft:var(--sen-soft); --me-ink:var(--sen-ink); --me-wash:var(--sen-wash);
+        --them:var(--jjok); --them-soft:var(--jjok-soft); --them-ink:var(--jjok-ink); --them-rule:var(--jjok-rule); --them-wash:var(--jjok-wash);
+        --gloss-on-me:var(--jjok-pale) }
+  /* 아직 언어를 고르지 않은 처음 화면: 두 색이 겹친 자주색 */
+  html[data-me="none"]{ --me:var(--both-solid); --me-soft:var(--both-soft); --me-ink:var(--both-ink) }
+
+  /* ===== 바탕 ===== */
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",Roboto,sans-serif}
-  .app{display:flex;flex-direction:column;height:100dvh;max-width:760px;margin:0 auto}
-  header{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
-    background:var(--panel);border-bottom:1px solid var(--line)}
-  header h1{font-size:17px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .iconbtn{border:0;background:none;font-size:20px;cursor:pointer;color:var(--text);padding:4px}
-  .notice{font-size:12.5px;color:var(--sub);text-align:center;padding:7px 14px;line-height:1.5}
-  .notice.warn{color:#c2410c}
-  #list{flex:1;overflow-y:auto;padding:12px 12px 6px;display:flex;flex-direction:column}
-  .day{align-self:center;font-size:11.5px;color:var(--sub);background:var(--panel);border:1px solid var(--line);
-    border-radius:20px;padding:3px 10px;margin:12px 0 4px}
-  .row{display:flex;flex-direction:column;max-width:80%;margin-top:8px}
-  .row.me{align-self:flex-end;align-items:flex-end}
-  .row.other{align-self:flex-start;align-items:flex-start}
-  .row.cont{margin-top:2px}
-  .name{font-size:12px;color:var(--sub);margin:0 6px 3px}
-  .bubble{padding:9px 13px;border-radius:18px;line-height:1.45;font-size:15.5px;white-space:pre-wrap;word-break:break-word;cursor:pointer}
-  .me .bubble{background:var(--me);color:#fff;border-bottom-right-radius:6px}
-  .other .bubble{background:var(--other);border:1px solid var(--line);border-bottom-left-radius:6px}
-  .sub{display:block;margin-top:6px;padding-top:6px;border-top:1px dashed currentColor;opacity:.7;font-size:13px}
-  .meta{font-size:11px;color:var(--sub);margin:3px 6px 0;display:flex;gap:6px}
-  .pending{font-style:italic;opacity:.7}
-  footer{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--panel);border-top:1px solid var(--line)}
-  textarea{flex:1;resize:none;font:inherit;font-size:16px;padding:10px 14px;border-radius:20px;border:1px solid var(--line);
-    background:var(--bg);color:var(--text);max-height:120px;line-height:1.4}
-  textarea:focus,input:focus,select:focus{outline:2px solid var(--accent);outline-offset:-1px}
-  .send{border:0;background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:15px;padding:0 18px;border-radius:20px;cursor:pointer}
-  .send:disabled{opacity:.45}
-  .empty{margin:auto;text-align:center;color:var(--sub);font-size:14px;line-height:1.7;padding:30px;white-space:pre-line}
-  /* 설정 화면 */
-  #setup{position:fixed;inset:0;background:var(--bg);display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:10;overflow:auto}
-  #setup.show{display:flex}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:380px;margin:auto}  /* margin:auto = 가운데 정렬 + 화면보다 길면 위에서부터 스크롤 */
-  .card h2{margin:0 0 4px;font-size:22px;text-align:center}
-  .card p.lead{margin:0 0 18px;text-align:center;color:var(--sub);font-size:13px}
-  label{display:block;font-size:13px;color:var(--sub);margin:12px 0 5px}
-  input,select{width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
-  .seg{display:flex;gap:8px}
-  .seg button{flex:1;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:15px;cursor:pointer}
-  .seg button.on{border-color:var(--accent);background:var(--accent);color:#fff;font-weight:700}
-  .card .send{width:100%;padding:13px;margin-top:20px;font-size:16px}
-  .err{color:#dc2626;font-size:13px;margin-top:10px;text-align:center;min-height:1em}
-  .passwrap{position:relative}
-  .passwrap input{padding-right:46px}
-  .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;cursor:pointer;padding:6px}
-  .hint{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.5}
+  html,body{margin:0;height:100%}
+  html{font-synthesis:none;-webkit-text-size-adjust:100%}
+  body{background:var(--paper);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;word-break:keep-all}   /* keep-all: 한글이 낱말 중간에서 끊기지 않게 */
+  /* 바탕에 두 사람의 색이 아주 옅게 번져 있다: 위쪽은 상대 색, 아래쪽은 내 색 */
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(80% 46% at 100% 0%,var(--them-wash),transparent 72%),radial-gradient(85% 50% at 0% 100%,var(--me-wash),transparent 72%)}
+  button,input,textarea{font:inherit;color:inherit}
+  button{cursor:pointer}
+  :focus-visible{outline:2px solid var(--me);outline-offset:2px}
+  textarea:focus-visible,input:focus-visible{outline:0}   /* 글 쓰는 칸은 테두리 색으로 표시한다 */
   [hidden]{display:none!important}
-  .inapp{background:#fff7ed;border:1px solid #fdba74;color:#7c2d12;border-radius:12px;padding:9px 12px;font-size:12px;line-height:1.55;margin-bottom:8px}
-  @media (prefers-color-scheme:dark){.inapp{background:#2a1c12;border-color:#9a5a2a;color:#fcd9b6}}
-  /* 초대 링크 */
-  .banner{border:1px solid var(--accent);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;text-align:center;margin-bottom:4px}
-  .banner span{display:block;white-space:pre-line}
-  .banner button{border:0;background:none;color:var(--sub);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px 6px 0}
-  .invite{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
-  .ghost{width:100%;padding:11px;border-radius:12px;border:1px solid var(--accent);background:none;color:var(--accent);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
-  .invite input{margin-top:8px;font-size:12.5px}
-  .ver{text-align:center;font-size:10.5px;color:var(--sub);opacity:.6;margin-top:10px}
-  /* 입력창 왼쪽 버튼 */
-  .tool{border:0;background:none;font-size:23px;padding:0 4px;cursor:pointer;line-height:1}
-  .tool.on{filter:drop-shadow(0 0 4px var(--accent))}
-  /* 스티커·이모지 패널 */
-  #panel{display:none;background:var(--panel);border-top:1px solid var(--line);height:260px;flex-direction:column}
-  #panel.show{display:flex}
-  .tabs{display:flex;gap:2px;padding:6px 8px;border-bottom:1px solid var(--line)}
-  .tabs button{border:0;background:none;font-size:20px;padding:5px 10px;border-radius:10px;cursor:pointer}
-  .tabs button.on{background:var(--bg)}
-  .grid{flex:1;overflow-y:auto;display:grid;gap:6px;padding:8px;align-content:start}
-  .grid.st{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}
-  .grid.em{grid-template-columns:repeat(auto-fill,minmax(42px,1fr))}
-  .grid button{border:0;background:none;cursor:pointer;border-radius:12px;padding:2px}
-  .grid button:active{background:var(--bg)}
-  .grid.st button svg{width:100%;height:auto;display:block}
-  .grid.st button span{display:block;font-size:10.5px;color:var(--sub);margin-top:-2px}
-  .grid.em button{font-size:27px;padding:4px 0}
+  @keyframes pulse{50%{opacity:.45}}
+  @keyframes fade{from{opacity:0}}
+
+  .app{display:flex;flex-direction:column;height:100dvh;max-width:720px;margin:0 auto;position:relative}
+
+  /* ===== 머리줄: 상대 이름과 방 상태 ===== */
+  header{display:flex;align-items:center;gap:12px;padding:calc(8px + env(safe-area-inset-top)) 10px 8px 16px;position:relative;z-index:2;
+    background:var(--glass);border-bottom:1px solid var(--line)}
+  .avatar{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:18px;line-height:1;
+    background:var(--them-soft);color:var(--them-ink)}
+  .avatar[data-lang=ko]{background:var(--jjok-soft);color:var(--jjok-ink)}
+  .avatar[data-lang=vi]{background:var(--sen-soft);color:var(--sen-ink)}
+  .avatar.none{background:none}
+  .avatar svg{width:38px;height:auto;display:block}
+  .who{flex:1;min-width:0}
+  header h1{font-size:18px;font-weight:500;margin:0;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .notice{display:flex;align-items:center;gap:6px;max-width:100%;border:0;background:none;padding:0;text-align:left;
+    font-size:12.5px;line-height:1.4;color:var(--ink-2);cursor:default}
+  .notice::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--ink-3)}
+  .notice span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .notice.ok::before{background:var(--leaf)}
+  .notice.warn{color:var(--warn);cursor:pointer}
+  .notice.warn::before{background:var(--warn)}
+  .notice.busy::before{animation:pulse 1.2s infinite}
+  .notice.off{visibility:hidden}
+  .iconbtn{flex:none;width:44px;height:44px;border:0;border-radius:50%;background:none;color:var(--ink-2);display:grid;place-items:center}
+  .iconbtn:active{background:var(--line)}
+  .iconbtn svg{width:23px;height:23px}
+
+  /* 잠깐 떴다 사라지는 안내 */
+  #toast{position:absolute;left:50%;top:calc(68px + env(safe-area-inset-top));z-index:5;transform:translate(-50%,-8px);
+    width:max-content;max-width:calc(100% - 32px);padding:9px 15px;border-radius:14px;background:var(--ink);color:var(--paper);
+    font-size:13.5px;line-height:1.45;text-align:center;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #toast.warn{background:var(--danger);color:var(--surface)}
+
+  /* ===== 대화 ===== */
+  #list{flex:1;overflow-y:auto;overscroll-behavior:contain}
+  #flow{display:flex;flex-direction:column;min-height:100%;padding:10px 14px}
+  .day{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink-3);margin:16px 6px 6px}
+  .day::before,.day::after{content:"";flex:1;height:1px;background:var(--line)}
+  .older{align-self:center;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);font-size:13px;padding:8px 16px;border-radius:999px;margin:4px 0}
+  .row{display:flex;flex-direction:column;margin-top:10px}
+  .row.cont{margin-top:3px}
+  .row.me{align-items:flex-end}
+  .row.other{align-items:flex-start}
+  .name{font-size:12px;color:var(--ink-2);margin:0 8px 3px}
+  .line{display:flex;align-items:flex-end;gap:6px;max-width:88%}
+  .row.me .line{flex-direction:row-reverse}
+  .bubble{min-width:0;padding:9px 14px 10px;border-radius:20px;font-size:16px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;text-wrap:pretty;cursor:pointer}
+  .row.me .bubble{background:var(--me);color:#fff;border-bottom-right-radius:6px}
+  .row.other .bubble{background:var(--them-soft);color:var(--ink);border-bottom-left-radius:6px}
+  .row.me.cont .bubble{border-top-right-radius:8px}
+  .row.other.cont .bubble{border-top-left-radius:8px}
+  .main{display:block}
+  /* 둘째 줄: 같은 말의 다른 나라 말. 그 언어의 색으로 쓴다 */
+  .sub{display:block;margin-top:6px;padding-top:6px;border-top:1px solid;font-size:13.5px;line-height:1.45}
+  .row.me .sub{color:var(--gloss-on-me);border-top-color:rgba(255,255,255,.3)}
+  .row.other .sub{color:var(--them-ink);border-top-color:var(--them-rule)}
+  .sub.wait{animation:pulse 1.2s infinite}
+  .row.other .sub.bad{color:var(--danger)}
+  .row.me .sub.bad{color:#fff;text-decoration:underline}
+  .meta{flex:none;display:flex;flex-direction:column;font-size:11px;line-height:1.35;color:var(--ink-3);padding-bottom:2px;white-space:nowrap}
+  .row.me .meta{align-items:flex-end}
+  .meta .bad{color:var(--danger)}
+  .empty{margin:auto;text-align:center;padding:28px;max-width:310px}
+  .empty svg{width:78px;height:auto;margin-bottom:14px}
+  .empty b{display:block;font-weight:400;font-size:17px;margin-bottom:6px}
+  .empty span{display:block;font-size:13.5px;color:var(--ink-2);line-height:1.55;text-wrap:balance}
   /* 채팅 안의 스티커·사진 */
-  .sticker{width:124px;height:124px;cursor:default}
+  .sticker{width:132px;height:132px}
   .sticker svg{width:100%;height:100%}
   .sticker img{width:100%;height:100%;object-fit:contain;display:block}
-  .sticker.wait{display:flex;align-items:center;justify-content:center;font-size:34px;border-radius:24px;background:var(--line);animation:pulse 1.2s infinite}
-  .grid.st button img{width:100%;height:auto;display:block}
-  .packhint{grid-column:1/-1;font-size:12.5px;color:var(--sub);line-height:1.55;padding:6px 4px 0}
-  .packadd{grid-column:1/-1;display:flex;gap:6px;padding:6px 2px 2px}
-  .packadd input{flex:1;min-width:0;padding:9px 12px}
-  .grid .packadd button{background:var(--accent);color:#fff;font:inherit;font-weight:700;font-size:14px;padding:0 16px;border-radius:12px}
-  .grid .packadd button:disabled{opacity:.5}
-  .photo{display:block;border-radius:16px;max-width:min(240px,62vw);max-height:320px;object-fit:cover;cursor:zoom-in;
-    background:var(--line);border:1px solid var(--line)}
+  .sticker.wait{display:grid;place-items:center;font-size:34px;border-radius:26px;background:var(--line);animation:pulse 1.2s infinite}
+  .photo{display:block;border-radius:18px;max-width:min(250px,64vw);max-height:330px;object-fit:cover;cursor:zoom-in;background:var(--line)}
   .photo.loading{width:200px;height:200px;animation:pulse 1.2s infinite}
-  @keyframes pulse{50%{opacity:.5}}
-  #viewer{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:20}
+  @media (prefers-reduced-motion:no-preference){
+    .row.new{animation:rise .2s ease-out both}
+    #panel.show{animation:panel .2s ease-out}
+    #setup.show{animation:fade .16s ease-out}
+    .brand .a{animation:meet-a .8s cubic-bezier(.2,.8,.2,1) both}
+    .brand .b{animation:meet-b .8s cubic-bezier(.2,.8,.2,1) both}
+    .brand .lens{animation:fade .45s .5s both}
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}}
+  @keyframes panel{from{opacity:0;transform:translateY(14px)}}
+  @keyframes meet-a{from{transform:translateX(-9px)}}
+  @keyframes meet-b{from{transform:translateX(9px)}}
+
+  /* ===== 입력줄 ===== */
+  footer{display:flex;align-items:flex-end;gap:4px;padding:8px 10px calc(8px + env(safe-area-inset-bottom)) 6px;
+    background:var(--glass);border-top:1px solid var(--line)}
+  .tool{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:none;color:var(--ink-2);display:grid;place-items:center}
+  .tool svg{width:24px;height:24px}
+  .tool:active{background:var(--line)}
+  .tool.on{color:var(--me);background:var(--me-soft)}
+  textarea{flex:1;min-width:0;resize:none;font-size:16px;line-height:1.4;padding:9px 16px;margin:0 4px 0 2px;border-radius:21px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);max-height:120px;outline:0}
+  textarea::placeholder{color:var(--ink-3)}
+  textarea:focus{border-color:var(--me)}
+  .sendbtn{flex:none;width:42px;height:42px;border:0;border-radius:50%;background:var(--me);color:#fff;display:grid;place-items:center;transition:transform .12s,opacity .12s}
+  .sendbtn svg{width:22px;height:22px}
+  .sendbtn:active{transform:scale(.92)}
+  .sendbtn:disabled{opacity:.32}
+
+  /* ===== 이모티콘 창 ===== */
+  #panel{display:none;flex-direction:column;height:min(300px,44dvh);background:var(--surface);border-top:1px solid var(--line)}
+  #panel.show{display:flex}
+  .tabs{display:flex;gap:2px;padding:6px 8px 0;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{flex:none;min-width:46px;height:42px;border:0;border-bottom:2px solid transparent;background:none;padding:0 8px 2px;
+    font-size:21px;line-height:1;display:grid;place-items:center;opacity:.5}
+  .tabs button img{width:30px;height:30px;object-fit:contain;display:block}
+  .tabs button.on{opacity:1;border-bottom-color:var(--me)}
+  .grid{flex:1;overflow-y:auto;display:grid;gap:6px;padding:10px;align-content:start}
+  .grid.st{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+  .grid.em{grid-template-columns:repeat(auto-fill,minmax(44px,1fr))}
+  .ptitle{grid-column:1/-1;font-size:12.5px;color:var(--ink-2);padding:0 4px}
+  .grid button{border:0;background:none;border-radius:14px;padding:4px}
+  .grid button:active{background:var(--paper)}
+  .grid.st button svg,.grid.st button img{width:100%;height:auto;display:block}
+  .grid.st button span{display:block;font-size:11px;color:var(--ink-2);margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .grid.em button{font-size:27px;line-height:1;padding:7px 0}
+  .packhint{grid-column:1/-1;font-size:13px;color:var(--ink-2);line-height:1.55;padding:4px}
+  .packadd{grid-column:1/-1;display:flex;gap:6px;padding:6px 2px 2px}
+  .packadd input{flex:1;min-width:0;padding:9px 12px;font-size:16px;border-radius:12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);outline:0}
+  .packadd input:focus{border-color:var(--me)}
+  .grid .packadd button{background:var(--me);color:#fff;font-size:14px;padding:0 16px;border-radius:12px}
+  .grid .packadd button:disabled{opacity:.5}
+
+  /* ===== 사진 크게 보기 ===== */
+  #viewer{position:fixed;inset:0;background:rgba(10,10,24,.95);display:none;align-items:center;justify-content:center;z-index:20}
   #viewer.show{display:flex}
   #viewer img{max-width:100%;max-height:100%;object-fit:contain}
-  #viewer .close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;color:#fff;font-size:30px;background:none;border:0;cursor:pointer}
-  #viewer .hint{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));color:#ccc;font-size:12.5px}
+  #viewer .close{position:absolute;top:calc(10px + env(safe-area-inset-top));right:12px;width:44px;height:44px;border-radius:50%;border:0;
+    background:rgba(255,255,255,.16);color:#fff;display:grid;place-items:center}
+  #viewer .close svg{width:22px;height:22px}
+  #viewer .hint{position:absolute;bottom:calc(16px + env(safe-area-inset-bottom));color:#cfcde0;font-size:12.5px}
+
+  /* ===== 처음 화면 · 설정 ===== */
+  #setup{position:fixed;inset:0;z-index:10;display:none;align-items:flex-start;justify-content:center;overflow:auto;background:var(--paper);
+    padding:calc(14px + env(safe-area-inset-top)) 22px calc(22px + env(safe-area-inset-bottom))}
+  #setup.show{display:flex}
+  .card{width:100%;max-width:400px;margin:auto}   /* margin:auto = 가운데 정렬 + 화면보다 길면 위에서부터 스크롤 */
+  .brand{text-align:center;margin:8px 0 6px}
+  .brand svg{width:88px;height:auto;overflow:visible}
+  .brand h2{font-size:28px;font-weight:400;margin:10px 0 4px}
+  .brand p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6;white-space:pre-line}
+  .sethead{display:flex;align-items:center;justify-content:space-between;margin:0 -10px 0 0}
+  .sethead h2{font-size:22px;font-weight:400;margin:0}
+  label,.label{display:block;font-size:13px;color:var(--ink-2);margin:18px 2px 7px}
+  #setup input{width:100%;font-size:16px;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);outline:0}
+  #setup input:focus{border-color:var(--me)}
+  .seg{display:flex;gap:10px}
+  .seg button{flex:1;min-height:50px;padding:8px 10px;border-radius:14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:16px}
+  .seg button.on{border-color:var(--me);background:var(--me-soft);color:var(--me-ink)}
+  /* 언어를 고르면 그 언어의 색이 내 색이 된다 */
+  .langs button{min-height:66px;font-size:17px;line-height:1.3}
+  .langs button small{display:block;font-size:11.5px;color:var(--ink-3)}
+  .langs button[data-v=ko].on{background:var(--jjok);border-color:var(--jjok);color:#fff}
+  .langs button[data-v=vi].on{background:var(--sen);border-color:var(--sen);color:#fff}
+  .langs button.on small{color:rgba(255,255,255,.86)}
+  .primary{width:100%;min-height:54px;margin-top:24px;border:0;border-radius:16px;background:var(--me);color:#fff;font-size:17px}
+  .primary:active{filter:brightness(.92)}
+  .primary:disabled{opacity:.5}
+  .err{color:var(--danger);font-size:13.5px;margin-top:10px;text-align:center;min-height:1.2em}
+  .passwrap{position:relative}
+  #setup .passwrap input{padding-right:52px}
+  .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:0;border-radius:50%;background:none;color:var(--ink-2);display:grid;place-items:center}
+  .eye svg{width:21px;height:21px}
+  .hint{font-size:12.5px;color:var(--ink-2);margin:7px 2px 0;line-height:1.55;white-space:pre-line}
+  .inapp{display:flex;gap:9px;align-items:baseline;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:11px 13px;
+    font-size:12.5px;line-height:1.55;margin-top:14px}
+  .inapp::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--warn);transform:translateY(-1px)}
+  .banner{background:var(--me-soft);color:var(--me-ink);border-radius:16px;padding:14px 16px 8px;font-size:15px;line-height:1.5;text-align:center;margin-top:20px}
+  .banner span,.inapp span{white-space:pre-line}
+  .banner b{display:block;font-weight:400;font-size:12.5px;opacity:.85}
+  .banner button{border:0;background:none;color:inherit;font-size:12.5px;text-decoration:underline;padding:8px 8px;opacity:.85}
+  .section{margin-top:26px;padding-top:22px;border-top:1px solid var(--line)}
+  .ghost{width:100%;min-height:50px;border-radius:14px;border:1px solid var(--me);background:none;color:var(--me);font-size:16px;
+    display:flex;align-items:center;justify-content:center;gap:8px}
+  @media (prefers-color-scheme:dark){.ghost{color:var(--me-ink);border-color:var(--me-ink)}}
+  .ghost svg{width:20px;height:20px}
+  .ghost:active{background:var(--me-soft)}
+  #setup .invite input{margin-top:8px;font-size:12.5px}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;border:0;background:none;padding:4px 2px;text-align:left;font-size:15.5px;color:var(--ink)}
+  .switch i{flex:none;width:46px;height:28px;border-radius:14px;background:var(--ink-3);position:relative;transition:background .15s}
+  .switch i::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .15s}
+  .switch[aria-checked=true] i{background:var(--me)}
+  .switch[aria-checked=true] i::after{transform:translateX(18px)}
+  .ver{text-align:center;font-size:11px;color:var(--ink-3);margin-top:22px}
 </style>
 </head>
 <body>
 <div class="app">
   <header>
-    <h1 id="title">우리 둘 💕</h1>
-    <button class="iconbtn" id="settingsBtn" aria-label="settings">⚙️</button>
+    <div class="avatar none" id="avatar" aria-hidden="true"></div>
+    <div class="who">
+      <h1 id="title">우리 둘</h1>
+      <button type="button" class="notice off" id="notice"><span></span></button>
+    </div>
+    <button type="button" class="iconbtn" id="settingsBtn" aria-label="설정 · Cài đặt">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
+    </button>
   </header>
-  <div class="notice" id="notice"></div>
-  <div id="list"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="list"><div id="flow"></div></div>
   <footer>
-    <button class="tool" id="photoBtn" aria-label="photo">📷</button>
-    <button class="tool" id="emojiBtn" aria-label="emoticon">🐰</button>
+    <button type="button" class="tool" id="photoBtn" aria-label="사진 · Ảnh">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="3.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17l4.6-4.3a1.5 1.5 0 0 1 2 0l2.4 2.2 2-1.8a1.5 1.5 0 0 1 2 0l2 1.9"/></svg>
+    </button>
+    <button type="button" class="tool" id="emojiBtn" aria-label="이모티콘 · Sticker">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.6 14.2c.8 1.2 2 1.9 3.4 1.9s2.6-.7 3.4-1.9M9.2 9.8v.4M14.8 9.8v.4"/></svg>
+    </button>
     <textarea id="input" rows="1"></textarea>
-    <button class="send" id="send">➤</button>
+    <button type="button" class="sendbtn" id="send" aria-label="보내기 · Gửi" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5.5M6.2 11.2 12 5.4l5.8 5.8"/></svg>
+    </button>
   </footer>
   <input type="file" id="fileInput" accept="image/*" multiple hidden>
   <div id="panel">
@@ -134,46 +286,59 @@
 </div>
 
 <!-- 사진 크게 보기 -->
-<div id="viewer"><button class="close" aria-label="close">✕</button><img alt=""><div class="hint" id="viewerHint"></div></div>
+<div id="viewer">
+  <button type="button" class="close" aria-label="닫기 · Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <img alt=""><div class="hint" id="viewerHint"></div>
+</div>
 
-<!-- 처음 들어올 때 / ⚙️ 눌렀을 때 -->
+<!-- 처음 들어올 때 / 설정 버튼을 눌렀을 때. 글자는 고른 언어에 맞춰 스크립트가 채운다 -->
 <div id="setup">
-  <form class="card" id="setupForm">
-    <h2>💕</h2>
-    <p class="lead">한국어 ↔ Tiếng Việt</p>
-    <!-- 메신저 안에서 열렸을 때만 보인다 -->
-    <div class="inapp" id="inAppHint" hidden>💡 지금은 <b>메신저 안의 브라우저</b>예요. 메뉴(⋯ 또는 공유 버튼)에서 <b>Safari로 열기 · 다른 브라우저로 열기</b>를 눌러 거기서 쓰면 설정이 계속 남아요.<br>Bạn đang mở <b>trong ứng dụng nhắn tin</b>. Bấm menu (⋯) rồi chọn <b>Mở bằng Safari / trình duyệt</b> để cài đặt được lưu lại.</div>
-    <!-- 초대 링크로 들어왔을 때만 보인다 -->
-    <div class="banner" id="joinBanner" hidden><span id="joinText"></span><button type="button" id="joinCancel">초대 취소 · Hủy lời mời</button></div>
-    <label id="lbLang">언어 / Ngôn ngữ</label>
-    <div class="seg" id="segLang">
-      <button type="button" data-v="ko">🇰🇷 한국어</button>
-      <button type="button" data-v="vi">🇻🇳 Tiếng Việt</button>
+  <form class="card" id="setupForm" novalidate>
+    <div class="sethead" id="setHead" hidden>
+      <h2 id="setTitle"></h2>
+      <button type="button" class="iconbtn" id="setupClose" aria-label="닫기 · Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
-    <label id="lbRole">나는 / Tôi là</label>
+    <div class="brand" id="brand">
+      <svg viewBox="0 0 64 44" aria-hidden="true"><circle class="a" cx="22" cy="22" r="18" fill="var(--jjok)"/><circle class="b" cx="42" cy="22" r="18" fill="var(--sen)"/><path class="lens" d="M32 7.03A18 18 0 0 1 32 36.97 18 18 0 0 1 32 7.03Z" fill="var(--both)"/></svg>
+      <h2 id="brandName">우리 둘</h2>
+      <p id="brandLead"></p>
+    </div>
+    <div class="inapp" id="inAppHint" hidden><span id="inAppText"></span></div>
+    <div class="label" id="lbLang"></div>
+    <div class="seg langs" id="segLang">
+      <button type="button" data-v="ko">한국어<small>Tiếng Hàn</small></button>
+      <button type="button" data-v="vi">Tiếng Việt<small>베트남어</small></button>
+    </div>
+    <div class="label" id="lbRole"></div>
     <div class="seg" id="segRole">
-      <button type="button" data-v="m">남자 · Nam</button>
-      <button type="button" data-v="f">여자 · Nữ</button>
+      <button type="button" data-v="m"></button>
+      <button type="button" data-v="f"></button>
     </div>
-    <label id="lbName" for="fName">내 이름 / Tên</label>
-    <input id="fName" maxlength="20" autocomplete="nickname" required>
+    <label id="lbName" for="fName"></label>
+    <input id="fName" type="text" maxlength="20" autocomplete="nickname">
+    <!-- 초대 링크로 들어왔을 때만 보인다 -->
+    <div class="banner" id="joinBanner" hidden><span id="joinText"></span><b id="joinCode"></b><button type="button" id="joinCancel"></button></div>
     <div id="passBlock">
-      <label id="lbPass" for="fPass">방 비밀번호 / Mật khẩu phòng</label>
+      <label id="lbPass" for="fPass"></label>
       <div class="passwrap">
         <input id="fPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
-        <button type="button" class="eye" id="eyeBtn" aria-label="show or hide">🙈</button>
+        <button type="button" class="eye" id="eyeBtn" aria-label="비밀번호 보이기/가리기 · Hiện/ẩn mật khẩu"></button>
       </div>
-      <div class="hint">둘이 <b>똑같이</b> 입력해야 같은 방이에요. 더 쉬운 방법: 먼저 들어간 사람이 ⚙️에서 <b>초대 링크</b>를 보내기<br>Hai người phải nhập <b>giống nhau</b>. Dễ hơn: người vào trước mở ⚙️ rồi gửi <b>link mời</b></div>
+      <div class="hint" id="passHint"></div>
     </div>
-    <button class="send" id="enterBtn" type="submit">입장 · Vào</button>
-    <div class="err" id="setupErr"></div>
-    <!-- 방에 들어온 뒤 ⚙️에서만 보인다 -->
-    <div class="invite" id="inviteBox" hidden>
-      <button type="button" class="ghost" id="inviteBtn"></button>
+    <button class="primary" id="enterBtn" type="submit"></button>
+    <div class="err" id="setupErr" role="alert"></div>
+    <!-- 방에 들어온 뒤 설정에서만 보인다 -->
+    <div class="section invite" id="inviteBox" hidden>
+      <button type="button" class="ghost" id="inviteBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 7.5l4-4 4 4M6 11.5v6a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"/></svg><span id="inviteLabel"></span></button>
       <div class="hint" id="inviteInfo"></div>
-      <input id="inviteUrl" readonly hidden aria-label="invite link">
+      <input id="inviteUrl" type="text" readonly hidden aria-label="invite link">
     </div>
-    <div class="ver">v8</div>
+    <div class="section" id="prefBox" hidden>
+      <button type="button" class="switch" id="bothBtn" role="switch" aria-checked="true"><span id="bothLabel"></span><i></i></button>
+      <div class="hint" id="bothHint"></div>
+    </div>
+    <div class="ver">v9</div>
   </form>
 </div>
 
@@ -188,18 +353,43 @@ import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "./stickers.js";
 
 // ===== 화면 문구 =====
 const UI = {
-  ko:{ph:'메시지 입력…',translating:'번역 중…',failed:'번역 실패 · 눌러서 다시',sendFail:'전송 실패 · 눌러서 다시',
-      empty:'아직 메시지가 없어요.\n내가 한국어로 보내면 상대는 베트남어로 봐요 💌',
-      tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',alone:'⚠️ 아직 이 방에 혼자예요 · ⚙️에서 초대 링크를 보내면 상대가 바로 들어와요 · 방 확인번호 {code}',inviteBtn:'💌 초대 링크 보내기',inviteInfo:'링크를 받은 사람은 비밀번호 없이 이 방으로 들어와요. 링크가 곧 방 열쇠라서 상대에게만 보내세요. (지금 방 확인번호 {code})',inviteCopied:'링크를 복사했어요. 상대에게 붙여넣어 보내 주세요.',inviteManual:'아래 링크를 길게 눌러 복사해서 상대에게 보내 주세요.',alreadyIn:'이미 이 방에 들어와 있어요',together:'💕 {names} 님과 같은 방이에요 · 말풍선을 누르면 원문/번역을 같이 볼 수 있어요',count:'참여자 {n}명',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
-      wrongPass:'비밀번호가 틀렸어요',shortPass:'방 비밀번호는 8자 이상으로 해 주세요 (둘이 똑같이 입력해야 같은 방이에요)',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
-      today:'오늘',enter:'입장 · Vào',packEmpty:'사진 이모티콘이 아직 없어요. 받은 코드를 아래에 붙여넣고 추가를 누르면 두 사람 모두에게 생겨요.',packPh:'이모티콘 코드 붙여넣기',packAdd:'추가',packOk:'📸 사진 이모티콘 {n}개가 추가됐어요 · 🐰 버튼 안의 📸 탭에 있어요',packBad:'코드가 올바르지 않아요. 전체를 복사했는지 확인해 주세요',packFail:'이모티콘을 불러오지 못했어요. 잠시 후 다시 해 주세요',photoSticker:'사진 이모티콘',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
-      save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
-  vi:{ph:'Nhắn tin…',translating:'Đang dịch…',failed:'Dịch lỗi · chạm để thử lại',sendFail:'Gửi lỗi · chạm để thử lại',
-      empty:'Chưa có tin nhắn.\nEm nhắn tiếng Việt, anh ấy sẽ đọc bằng tiếng Hàn 💌',
-      tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',alone:'⚠️ Phòng này chưa có ai khác · Mở ⚙️ gửi link mời là người ấy vào được ngay · Mã phòng {code}',inviteBtn:'💌 Gửi link mời',inviteInfo:'Người nhận link sẽ vào thẳng phòng này, không cần mật khẩu. Link chính là chìa khóa phòng nên chỉ gửi cho người ấy thôi nhé. (Mã phòng hiện tại {code})',inviteCopied:'Đã sao chép link. Dán và gửi cho người ấy nhé.',inviteManual:'Nhấn giữ link bên dưới để sao chép rồi gửi cho người ấy nhé.',alreadyIn:'Bạn đang ở phòng này rồi',together:'💕 Đang cùng phòng với {names} · Chạm vào tin nhắn để xem bản gốc và bản dịch',count:'{n} người',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
-      wrongPass:'Sai mật khẩu rồi',shortPass:'Mật khẩu phòng cần ít nhất 8 ký tự (hai người nhập giống nhau mới vào cùng phòng nhé)',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
-      today:'Hôm nay',enter:'Vào · 입장',packEmpty:'Chưa có sticker ảnh. Dán mã nhận được vào bên dưới rồi bấm Thêm, cả hai sẽ cùng có.',packPh:'Dán mã sticker',packAdd:'Thêm',packOk:'📸 Đã thêm {n} sticker ảnh · xem ở tab 📸 trong nút 🐰',packBad:'Mã không đúng. Kiểm tra đã sao chép đủ chưa nhé',packFail:'Không tải được sticker. Thử lại sau nhé',photoSticker:'Sticker ảnh',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
-      save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
+  ko:{appName:'우리 둘',ph:'메시지',translating:'번역 중…',failed:'번역하지 못했어요. 눌러서 다시',sendFail:'보내지 못했어요. 눌러서 다시',
+      emptyTitle:'첫 인사를 건네 보세요',emptyBody:'한국어로 보내면 상대에게는 베트남어로 보여요',
+      alone:'아직 혼자예요. 눌러서 상대를 초대하세요',together:'같은 방에 있어요',count:'모두 {n}명',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
+      older:'이전 대화 더 보기',today:'오늘',
+      inviteBtn:'초대 링크 보내기',inviteInfo:'링크를 받은 사람은 비밀번호 없이 이 방으로 들어와요. 링크가 곧 방 열쇠라서 상대에게만 보내세요. 지금 방 확인번호는 {code}예요.',
+      inviteCopied:'링크를 복사했어요. 상대에게 붙여넣어 보내 주세요.',inviteManual:'아래 링크를 길게 눌러 복사해서 상대에게 보내 주세요.',alreadyIn:'이미 이 방에 들어와 있어요',
+      shortPass:'방 비밀번호는 8자 이상으로 해 주세요 (둘이 똑같이 입력해야 같은 방이에요)',needAll:'모두 입력해 주세요',
+      myStickers:'내 이모티콘',charStickers:'토리와 뭉치',
+      packEmpty:'아직 내 이모티콘이 없어요. 받은 코드를 아래에 붙여넣고 추가를 누르면 두 사람 모두에게 생겨요.',packPh:'이모티콘 코드 붙여넣기',packAdd:'추가',
+      packOk:'내 이모티콘 {n}개가 들어왔어요',packBad:'코드가 올바르지 않아요. 전체를 복사했는지 확인해 주세요',packFail:'이모티콘을 불러오지 못했어요. 잠시 후 다시 해 주세요',
+      photoSticker:'사진 이모티콘',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
+  vi:{appName:'Hai đứa mình',ph:'Nhắn tin',translating:'Đang dịch…',failed:'Chưa dịch được. Chạm để thử lại',sendFail:'Chưa gửi được. Chạm để thử lại',
+      emptyTitle:'Gửi lời chào đầu tiên nhé',emptyBody:'Bạn nhắn tiếng Việt, người ấy sẽ đọc bằng tiếng Hàn',
+      alone:'Chưa có ai khác. Chạm để gửi link mời',together:'Đang ở cùng phòng',count:'tất cả {n} người',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
+      older:'Xem tin nhắn cũ hơn',today:'Hôm nay',
+      inviteBtn:'Gửi link mời',inviteInfo:'Người nhận link sẽ vào thẳng phòng này, không cần mật khẩu. Link chính là chìa khóa phòng nên chỉ gửi cho người ấy thôi nhé. Mã phòng hiện tại là {code}.',
+      inviteCopied:'Đã sao chép link. Dán và gửi cho người ấy nhé.',inviteManual:'Nhấn giữ link bên dưới để sao chép rồi gửi cho người ấy nhé.',alreadyIn:'Bạn đang ở phòng này rồi',
+      shortPass:'Mật khẩu phòng cần ít nhất 8 ký tự (hai người nhập giống nhau mới vào cùng phòng nhé)',needAll:'Điền đủ thông tin nhé',
+      myStickers:'Sticker của mình',charStickers:'Tori và Mungchi',
+      packEmpty:'Chưa có sticker của mình. Dán mã nhận được vào bên dưới rồi bấm Thêm, cả hai sẽ cùng có.',packPh:'Dán mã sticker',packAdd:'Thêm',
+      packOk:'Đã có {n} sticker của mình',packBad:'Mã không đúng. Kiểm tra đã sao chép đủ chưa nhé',packFail:'Không tải được sticker. Thử lại sau nhé',
+      photoSticker:'Sticker ảnh',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
+};
+// 처음 화면·설정에 쓰는 문구 [한국어, 베트남어]. 언어를 아직 고르지 않았으면 둘 다 보여 준다
+const SETUP = {
+  lead:['내가 쓴 말이 상대의 언어로 전해져요','Lời bạn viết sẽ đến bằng ngôn ngữ của người ấy'],
+  title:['설정','Cài đặt'], lang:['내 언어','Ngôn ngữ của tôi'], role:['나는','Tôi là'], m:['남자','Nam'], f:['여자','Nữ'],
+  name:['내 이름','Tên của tôi'], pass:['방 비밀번호','Mật khẩu phòng'],
+  passHint:['둘이 똑같이 입력해야 같은 방이 돼요. 먼저 들어간 사람이 초대 링크를 보내면 입력 없이 들어올 수 있어요.',
+            'Hai người phải nhập giống nhau mới vào cùng phòng. Người vào trước có thể gửi link mời để người kia vào mà không cần nhập.'],
+  linkRoom:['초대 링크로 들어온 방','Phòng từ link mời'],
+  enter:['입장','Vào phòng'], save:['저장하고 돌아가기','Lưu và quay lại'], enterInvite:['초대받은 방에 입장','Vào phòng được mời'],
+  joinText:['초대받은 방으로 들어가요','Bạn được mời vào phòng'], joinCode:['방 확인번호 {code}','Mã phòng {code}'], joinCancel:['초대 취소','Hủy lời mời'],
+  inApp:['지금은 메신저 안의 브라우저예요. 메뉴에서 Safari(또는 다른 브라우저)로 열어 거기서 쓰면 설정이 계속 남아요.',
+         'Bạn đang mở trong ứng dụng nhắn tin. Hãy bấm menu rồi mở bằng Safari (hoặc trình duyệt khác) để cài đặt được lưu lại.'],
+  both:['말풍선에 두 언어 같이 보기','Hiện cả hai ngôn ngữ trong tin nhắn'],
+  bothHint:['끄면 말풍선을 눌렀을 때만 다른 언어가 보여요','Khi tắt, chạm vào tin nhắn mới hiện ngôn ngữ còn lại']
 };
 const $ = id => document.getElementById(id);
 const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}} };
@@ -213,6 +403,7 @@ let me = {
   room: /^[a-f0-9]{64}$/.test(store.get('room')||'') ? store.get('room') : ''   // 초대 링크로 들어온 방 주소 (비밀번호 대신 쓴다)
 };
 const t = k => (UI[me.lang]||UI.ko)[k];
+let bothOn = store.get('both')!=='0';   // 말풍선에 두 언어 같이 보기 (기본: 켬)
 
 // ===== Firebase =====
 let fb, auth, fs, uid=null, roomId=null, unsubMsgs=null, unsubMembers=null;
@@ -241,11 +432,11 @@ try {
     model: MODEL,
     generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
   }, { timeout: 20000 });   // 20초 안에 답이 없으면 실패로 처리 (눌러서 재시도 가능)
-} catch(e) { console.error(e); showNotice('Firebase 연결 설정을 확인해 주세요', true); }
+} catch(e) { console.error(e); setStatus('Firebase 연결 설정을 확인해 주세요', 'warn'); }
 
 // ===== 상태 =====
 let msgs = [];                 // 화면에 보이는 메시지
-const showBoth = new Set();    // 원문+번역 같이 보기
+const flipped = new Set();     // 눌러서 둘째 줄 보기를 뒤집은 말풍선
 const failed = new Set();      // 번역 실패
 const inflight = new Set();    // 번역 요청 중
 const localPending = [];       // 전송 실패한 내 메시지
@@ -266,22 +457,41 @@ const personKey = x => [String(x.name||'').trim().normalize('NFKC').toLowerCase(
 const sameAsMe = x => !!x && !!me.name && personKey(x)===personKey(me);
 const isMine = m => m.uid===uid || sameAsMe(m);
 const whoOf = m => isMine(m) ? 'me' : personKey(m);
+// 이 방의 상대(들): 나(예전의 나 포함)를 빼고, 같은 사람이 여러 번 잡힌 것은 한 명으로 센다
+function otherPeople(){ return [...new Map(roomMembers.filter(m=>m.id!==uid && !sameAsMe(m)).map(o=>[personKey(o), o])).values()]; }
+// 두 원이 겹친 표시: 쪽빛(한국어)과 연꽃색(베트남어). 혼자일 때 머리줄과 빈 화면에 쓴다
+const MARK = '<svg viewBox="0 0 64 44" aria-hidden="true"><circle cx="22" cy="22" r="18" fill="var(--jjok)"/><circle cx="42" cy="22" r="18" fill="var(--sen)"/><path d="M32 7.03A18 18 0 0 1 32 36.97 18 18 0 0 1 32 7.03Z" fill="var(--both)"/></svg>';
+// 머리줄: 상대가 있으면 상대 이름과 첫 글자, 없으면 앱 이름
+function paintHeader(others){
+  const av=$('avatar');
+  if(others && others.length){
+    $('title').textContent = others.map(o=>o.name||'💕').join(', ');
+    av.className='avatar'; av.dataset.lang = others[0].lang||'';
+    av.textContent = ([...String(others[0].name||'').trim()][0] || '💕').toLocaleUpperCase();
+  } else {
+    $('title').textContent = t('appName');
+    av.className='avatar none'; av.removeAttribute('data-lang'); av.innerHTML = MARK;
+  }
+}
+let alone=false;
 function showRoomStatus(){
   if(!roomId || !membersLoaded) return;
-  // 나(예전의 나 포함)를 빼고, 같은 사람이 여러 번 잡힌 것은 한 명으로 센다
-  const others = [...new Map(roomMembers.filter(m=>m.id!==uid && !sameAsMe(m)).map(o=>[personKey(o), o])).values()];
-  if(!others.length){ showNotice(t('alone').replace('{code}', roomCode()), true); return; }
-  let text = t('together').replace('{names}', others.map(o=>o.name||'💕').join(', '));
-  if(others.length>1) text += ' · ' + t('count').replace('{n}', others.length+1);
-  showNotice(text);
+  const others = otherPeople();
+  alone = !others.length;
+  paintHeader(others);
+  if(alone) setStatus(t('alone'), 'warn');
+  else setStatus(t('together') + (others.length>1 ? ' (' + t('count').replace('{n}', others.length+1) + ')' : ''), 'ok');
 }
-let baseNotice={ text:'', warn:false }, flashTimer=null;
-function paintNotice(text, warn){ const n=$('notice'); n.textContent=text||''; n.className='notice'+(warn?' warn':''); n.style.display=text?'':'none'; }
-function showNotice(text, warn){ baseNotice={ text, warn }; if(!flashTimer) paintNotice(text, warn); }
-// 몇 초만 보여 주는 안내. 끝나면 원래 안내(방 상태 등)로 돌아간다
+// 머리줄 아래 한 줄: 방 상태. kind = 'ok'(같은 방) | 'warn'(확인 필요) | 'busy'(진행 중) | ''
+function setStatus(text, kind){
+  const n=$('notice'); n.firstElementChild.textContent = text||'';
+  n.className = 'notice' + (kind ? ' '+kind : '') + (text ? '' : ' off');
+}
+// 몇 초만 떴다 사라지는 안내
+let toastTimer=null;
 function flash(text, warn){
-  paintNotice(text, warn); clearTimeout(flashTimer);
-  flashTimer=setTimeout(()=>{ flashTimer=null; paintNotice(baseNotice.text, baseNotice.warn); }, 6000);
+  const el=$('toast'); el.textContent=text; el.className=(warn?'warn ':'')+'show';
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'), 4500);
 }
 const roleWord = r => r==='f'?'Girlfriend':r==='m'?'Boyfriend':'Partner';
 function contextBefore(ts){
@@ -464,69 +674,100 @@ async function translateAndSave(m, target){
 }
 
 // ===== 그리기 =====
-const fmtTime = ts => new Date(ts).toLocaleTimeString(me.lang==='vi'?'vi-VN':'ko-KR',{hour:'2-digit',minute:'2-digit'});
+const locale = () => me.lang==='vi' ? 'vi-VN' : 'ko-KR';
+const fmtTime = ts => new Date(ts).toLocaleTimeString(locale(),{hour:'2-digit',minute:'2-digit'});
 const fmtDay = ts => { const d=new Date(ts), n=new Date();
   if(d.toDateString()===n.toDateString()) return t('today');
-  return d.toLocaleDateString(me.lang==='vi'?'vi-VN':'ko-KR',{month:'long',day:'numeric',weekday:'short'}); };
+  return d.toLocaleDateString(locale(), { ...(d.getFullYear()!==n.getFullYear() ? { year:'numeric' } : {}), month:'long', day:'numeric', weekday:'long' }); };
 let recheck=null;
+let loaded=false;          // 이 방의 대화를 서버에서 한 번이라도 받았는지
+let canAnimate=false;      // 처음 불러온 대화는 그대로 두고, 그 뒤에 새로 온 말풍선만 떠오르게 한다
+let shownIds=new Set();    // 화면에 이미 그린 메시지
+let msgLimit=200, hasOlder=false, keepPos=null;   // 이전 대화 더 보기
+function emptyEl(){
+  const e=document.createElement('div'); e.className='empty'; e.innerHTML=MARK;
+  const b=document.createElement('b'); b.textContent=t('emptyTitle');
+  const s=document.createElement('span'); s.textContent=t('emptyBody');
+  e.append(b, s); return e;
+}
+// 맨 아래를 보고 있는지 (새 말풍선·사진·글씨가 뒤늦게 자리를 차지해도 계속 맨 아래에 붙여 두기 위해)
+let stick=true;
+$('list').addEventListener('scroll', ()=>{ const l=$('list'); stick = l.scrollHeight-l.scrollTop-l.clientHeight < 80; }, { passive:true });
+if(window.ResizeObserver){ const ro=new ResizeObserver(()=>{ if(stick){ const l=$('list'); l.scrollTop=l.scrollHeight; } }); ro.observe($('flow')); ro.observe($('list')); }
 function render(){
-  const list=$('list');
-  const nearBottom = list.scrollHeight-list.scrollTop-list.clientHeight < 120;
+  const scroller=$('list'), list=$('flow');
+  const top=scroller.scrollTop;
   list.textContent='';
   const all = [...msgs, ...localPending].sort((a,b)=>a.ts-b.ts);
-  if(!all.length){ const e=document.createElement('div'); e.className='empty'; e.textContent=t('empty'); list.appendChild(e); }
+  if(!all.length){ if(loaded) list.appendChild(emptyEl()); }
+  else if(hasOlder){
+    // 지금 보이는 것보다 오래된 대화가 서버에 더 있다. 누르면 300개씩 더 불러온다 (대화는 지워지지 않고 서버에 그대로 있다)
+    const b=document.createElement('button'); b.type='button'; b.className='older'; b.textContent=t('older');
+    b.onclick=()=>{ keepPos={ h:scroller.scrollHeight, top:scroller.scrollTop, n:msgs.length }; msgLimit+=300; listenMsgs(); };
+    list.appendChild(b);
+  }
+  const other = me.lang==='ko'?'vi':'ko';
+  const crowd = otherPeople().length>1;        // 셋 이상 모인 방에서만 이름표를 붙인다 (둘이면 머리줄의 이름으로 충분하다)
+  const animate = canAnimate && !keepPos;
   let prev=null, lastDay='', next=Infinity;
-  for(const m of all){
+  for(let i=0;i<all.length;i++){
+    const m=all[i], nx=all[i+1];
     const day=new Date(m.ts).toDateString();
     if(day!==lastDay){ const d=document.createElement('div'); d.className='day'; d.textContent=fmtDay(m.ts); list.appendChild(d); lastDay=day; prev=null; }
-    const mine = isMine(m);
-    const cont = prev && whoOf(prev)===whoOf(m) && m.ts-prev.ts<120000;
-    const row=document.createElement('div'); row.className='row '+(mine?'me':'other')+(cont?' cont':'');
-    if(!mine && !cont){ const n=document.createElement('div'); n.className='name'; n.textContent=m.name||'💕'; row.appendChild(n); }
-
-    const other = me.lang==='ko'?'vi':'ko';
-    if(m.kind==='sticker' || m.kind==='image'){
-      row.appendChild(m.kind==='sticker' ? stickerEl(m) : photoEl(m));
-      const meta=document.createElement('div'); meta.className='meta';
-      const tm=document.createElement('span'); tm.textContent=fmtTime(m.ts); meta.appendChild(tm);
-      if(m.local){ const s=document.createElement('span'); s.className='pending'; s.style.color='#dc2626'; s.textContent=t('sendFail'); meta.appendChild(s);
-        row.lastElementChild.onclick=()=>retrySend(m); }
-      row.appendChild(meta); list.appendChild(row); prev=m; continue;
-    }
-    // 무엇을 보여줄지: 상대 메시지는 내 언어 번역본, 내 메시지는 원문
-    const sameLang = m.src ? m.src===me.lang : m.lang===me.lang;
-    let main=m.text, sub=null, pending=false;
-    if(!mine && !sameLang){
-      const tr = m.tr && m.tr[me.lang];
-      if(tr){ main=tr; sub=m.text; }
-      else if(!failed.has(m.id) && !m.local){
-        pending=true;
-        // 보낸 사람이 번역을 저장할 시간을 8초 기다린 뒤 직접 번역 (중복 비용 방지)
-        const age=Date.now()-m.ts;
-        if(document.visibilityState!=='visible'){ /* 화면이 다시 켜지면 아래 visibilitychange에서 재시도 */ }
-        else if(age>8000) queueTranslate(m, me.lang); else next=Math.min(next, 8000-age+100);
-      }
-    } else if(mine){
-      const tr = m.tr && m.tr[other];
-      if(tr) sub=tr;   // 상대에게 어떻게 보이는지
-    }
-    const b=document.createElement('div'); b.className='bubble'; b.textContent=main;
-    if(sub && showBoth.has(m.id)){ const s=document.createElement('span'); s.className='sub'; s.textContent=sub; b.appendChild(s); }
-    b.onclick=()=>{
-      if(m.local){ retrySend(m); return; }
-      if(failed.has(m.id)){ translateAndSave(m, mine?other:me.lang); return; }
-      if(sub){ showBoth.has(m.id)?showBoth.delete(m.id):showBoth.add(m.id); render(); }
-    };
-    row.appendChild(b);
+    const mine=isMine(m), who=whoOf(m);
+    const cont = prev && whoOf(prev)===who && m.ts-prev.ts<120000;
+    // 시간은 같은 사람이 같은 분에 이어 보낸 말풍선 묶음의 마지막에만 붙인다
+    const lastOfMinute = !nx || whoOf(nx)!==who || new Date(nx.ts).toDateString()!==day || Math.floor(nx.ts/60000)!==Math.floor(m.ts/60000);
+    const row=document.createElement('div');
+    row.className='row '+(mine?'me':'other')+(cont?' cont':'')+(animate && !shownIds.has(m.id)?' new':'');
+    if(crowd && !mine && !cont){ const n=document.createElement('div'); n.className='name'; n.textContent=m.name||'💕'; row.appendChild(n); }
+    const line=document.createElement('div'); line.className='line';
     const meta=document.createElement('div'); meta.className='meta';
-    const tm=document.createElement('span'); tm.textContent=fmtTime(m.ts); meta.appendChild(tm);
-    const st = m.local ? t('sendFail') : failed.has(m.id) ? t('failed')
-             : (pending || inflight.has(m.id+me.lang) || (mine && inflight.has(m.id+other))) ? t('translating') : '';
-    if(st){ const s=document.createElement('span'); s.className='pending'; s.textContent=st; if(m.local||failed.has(m.id)) s.style.color='#dc2626'; meta.appendChild(s); }
-    row.appendChild(meta);
-    list.appendChild(row); prev=m;
+    const note=text=>{ const s=document.createElement('span'); s.className='bad'; s.textContent=text; meta.appendChild(s); };
+    let body;
+    if(m.kind==='sticker' || m.kind==='image'){
+      body = m.kind==='sticker' ? stickerEl(m) : photoEl(m);
+      if(m.local){ note(t('sendFail')); body.onclick=()=>retrySend(m); }
+    } else {
+      // 첫 줄은 읽는 사람의 언어, 둘째 줄은 같은 말의 다른 언어(또는 번역 상태)
+      const sameLang = m.src ? m.src===me.lang : m.lang===me.lang;
+      let main=m.text, sub='', subKind='', twin=false;      // twin: 둘째 줄이 원문·번역일 때 (상태 문구가 아닐 때)
+      if(!mine && !sameLang){
+        const tr = m.tr && m.tr[me.lang];
+        if(tr){ main=tr; if(tr!==m.text){ sub=m.text; twin=true; } }
+        else if(failed.has(m.id)){ sub=t('failed'); subKind='bad'; }
+        else if(!m.local){
+          sub=t('translating'); subKind='wait';
+          // 보낸 사람이 번역을 저장할 시간을 8초 기다린 뒤 직접 번역 (중복 비용 방지)
+          const age=Date.now()-m.ts;
+          if(document.visibilityState!=='visible'){ /* 화면이 다시 켜지면 아래 visibilitychange에서 재시도 */ }
+          else if(age>8000) queueTranslate(m, me.lang); else next=Math.min(next, 8000-age+100);
+        }
+      } else if(mine && !m.local){
+        const tr = m.tr && m.tr[other];
+        if(tr){ if(tr!==m.text){ sub=tr; twin=true; } }     // 상대에게 어떻게 보이는지
+        else if(failed.has(m.id)){ sub=t('failed'); subKind='bad'; }
+        else if(inflight.has(m.id+other)){ sub=t('translating'); subKind='wait'; }
+      }
+      body=document.createElement('div'); body.className='bubble';
+      const mn=document.createElement('span'); mn.className='main'; mn.textContent=main; body.appendChild(mn);
+      // 둘째 줄은 설정(두 언어 같이 보기)을 따르고, 말풍선을 누르면 그 말풍선만 반대로 바뀐다. 번역 상태는 항상 보인다
+      if(sub && (!twin || bothOn!==flipped.has(m.id))){
+        const sp=document.createElement('span'); sp.className='sub'+(subKind?' '+subKind:''); sp.textContent=sub; body.appendChild(sp);
+      }
+      body.onclick=()=>{
+        if(m.local){ retrySend(m); return; }
+        if(failed.has(m.id)){ translateAndSave(m, mine?other:me.lang); return; }
+        if(twin){ flipped.has(m.id)?flipped.delete(m.id):flipped.add(m.id); render(); }
+      };
+      if(m.local) note(t('sendFail'));
+    }
+    if(lastOfMinute || meta.childNodes.length){ const tm=document.createElement('span'); tm.className='time'; tm.textContent=fmtTime(m.ts); meta.appendChild(tm); }
+    line.append(body, meta); row.appendChild(line); list.appendChild(row); prev=m;
   }
-  if(nearBottom) list.scrollTop=list.scrollHeight;
+  shownIds = new Set(all.map(m=>m.id));
+  if(keepPos && msgs.length>keepPos.n) scroller.scrollTop = scroller.scrollHeight-keepPos.h+keepPos.top;   // 이전 대화를 불러온 뒤에도 보던 자리 그대로
+  else scroller.scrollTop = stick ? scroller.scrollHeight : top;
   clearTimeout(recheck); if(next<Infinity) recheck=setTimeout(render,next);
 }
 
@@ -547,7 +788,9 @@ const imgCache = new Map();   // imageId -> dataURL
 const imgLoading = new Set();
 function photoEl(m){
   const img=document.createElement('img'); img.className='photo'; img.alt=t('photo');
-  if(m.w && m.h) img.style.aspectRatio = `${m.w} / ${m.h}`;
+  // 사진이 뜨기 전에도 자리를 미리 잡아 둔다 (나중에 화면이 밀리지 않게)
+  if(m.w>0 && m.h>0){ const k=Math.min(Math.min(250, ($('list').clientWidth||390)*0.64)/m.w, 330/m.h, 1);
+    img.style.width=Math.round(m.w*k)+'px'; img.style.height=Math.round(m.h*k)+'px'; }
   const src = m.preview || imgCache.get(m.imageId);
   if(src){ img.src=src; img.onclick=()=>openViewer(src); }
   else { img.classList.add('loading'); loadImage(m.imageId); }
@@ -611,17 +854,17 @@ async function sendPhotos(files){
   if(!roomId || !uid) return;
   for(const file of files){
     if(!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name)) continue;
-    showNotice(t('sendingPhoto'));
+    setStatus(t('sendingPhoto'), 'busy');
     let img;
     try{ img = await compress(file); }
-    catch(e){ console.error(e); showNotice(t('photoFail'), true); continue; }
+    catch(e){ console.error(e); flash(t('photoFail'), true); continue; }
     const imgRef = doc(collection(fs,'rooms',roomId,'images'));
     const { ref, m } = newMsg({ kind:'image', imageId:imgRef.id, w:img.w, h:img.h, preview:img.data });
     imgCache.set(imgRef.id, img.data);
     m.imgRef=imgRef; m.imgData=img.data;
     await writeMsg(ref, m);
   }
-  if(membersLoaded) showRoomStatus(); else showNotice(t('tap'));
+  if(membersLoaded) showRoomStatus(); else setStatus('', '');
 }
 async function writeMsg(ref, m){
   try{
@@ -642,38 +885,49 @@ async function writeMsg(ref, m){
   if(m.kind==='text') translateAndSave(m, me.lang==='ko'?'vi':'ko');
 }
 
-// ===== 스티커·이모지 패널 =====
-const TABS = [{ key:'st', icon:'🐰' }, { key:'ph', icon:'📸' }, ...Object.keys(EMOJI).map(k=>({ key:k, icon:k }))];
-let curTab='st';
+// ===== 이모티콘 창 =====
+// 탭 순서: 내 이모티콘(사진으로 만든 것) → 토리와 뭉치 → 이모지
+const TABS = [{ key:'ph' }, { key:'st', icon:'🐰' }, ...Object.keys(EMOJI).map(k=>({ key:k, icon:k }))];
+let curTab=null;      // 처음 열 때 정한다: 내 이모티콘이 있으면 그 탭부터
+function myStickers(){
+  const out=[];
+  for(const id of roomPacks){ const pk=packs.get(id); if(pk) for(const s of pk.stickers) out.push({ ref:`p:${id}:${s.id}`, s }); }
+  return out;
+}
 function drawPanel(){
+  const mine = myStickers();
+  if(!curTab) curTab = mine.length ? 'ph' : 'st';
   const tabs=$('tabs'); tabs.textContent='';
-  for(const tb of TABS){ const b=document.createElement('button'); b.textContent=tb.icon; b.className=tb.key===curTab?'on':'';
-    b.onclick=()=>{ curTab=tb.key; drawPanel(); }; tabs.appendChild(b); }
+  for(const tb of TABS){
+    const b=document.createElement('button'); b.type='button'; b.className=tb.key===curTab?'on':'';
+    if(tb.key==='ph'){
+      // 내 이모티콘 탭은 첫 이모티콘 그림을 그대로 탭 그림으로 쓴다
+      b.setAttribute('aria-label', t('myStickers'));
+      if(mine.length){ const im=document.createElement('img'); im.src=mine[0].s.data; im.alt=''; b.appendChild(im); } else b.textContent='📸';
+    } else { b.textContent=tb.icon; if(tb.key==='st') b.setAttribute('aria-label', t('charStickers')); }
+    b.onclick=()=>{ curTab=tb.key; drawPanel(); }; tabs.appendChild(b);
+  }
   const g=$('grid'); g.textContent=''; g.scrollTop=0;
+  const title=text=>{ const h=document.createElement('div'); h.className='ptitle'; h.textContent=text; g.appendChild(h); };
   if(curTab==='st'){
-    g.className='grid st';
+    g.className='grid st'; title(t('charStickers'));
     for(const s of STICKERS){
-      const b=document.createElement('button'); b.innerHTML=stickerSvg(s.id);
+      const b=document.createElement('button'); b.type='button'; b.innerHTML=stickerSvg(s.id);
       const l=document.createElement('span'); l.textContent=s[me.lang]||s.ko; b.appendChild(l);
       b.onclick=()=>{ sendSticker(s.id); togglePanel(false); };
       g.appendChild(b);
     }
   } else if(curTab==='ph'){
-    // 사진 이모티콘 (방에 추가된 묶음)
-    g.className='grid st';
-    let n=0;
-    for(const id of roomPacks){
-      const pk=packs.get(id); if(!pk) continue;
-      for(const s of pk.stickers){
-        n++;
-        const b=document.createElement('button');
-        const im=document.createElement('img'); im.src=s.data; im.alt=s[me.lang]||s.ko||t('photoSticker'); b.appendChild(im);
-        const lb=s[me.lang]||s.ko; if(lb){ const l=document.createElement('span'); l.textContent=lb; b.appendChild(l); }
-        b.onclick=()=>{ sendSticker(`p:${id}:${s.id}`); togglePanel(false); };
-        g.appendChild(b);
-      }
+    // 내 이모티콘 (방에 들어 있는 사진 이모티콘 묶음)
+    g.className='grid st'; title(t('myStickers'));
+    for(const { ref, s } of mine){
+      const b=document.createElement('button'); b.type='button';
+      const im=document.createElement('img'); im.src=s.data; im.alt=s[me.lang]||s.ko||t('photoSticker'); b.appendChild(im);
+      const lb=s[me.lang]||s.ko; if(lb){ const l=document.createElement('span'); l.textContent=lb; b.appendChild(l); }
+      b.onclick=()=>{ sendSticker(ref); togglePanel(false); };
+      g.appendChild(b);
     }
-    if(!n){ const h=document.createElement('div'); h.className='packhint'; h.textContent=t('packEmpty'); g.appendChild(h); }
+    if(!mine.length){ const h=document.createElement('div'); h.className='packhint'; h.textContent=t('packEmpty'); g.appendChild(h); }
     const f=document.createElement('form'); f.className='packadd';
     const inp=document.createElement('input'); inp.type='text'; inp.placeholder=t('packPh');
     inp.autocomplete='off'; inp.autocapitalize='off'; inp.spellcheck=false; inp.setAttribute('autocorrect','off');
@@ -692,7 +946,7 @@ function drawPanel(){
   } else {
     g.className='grid em';
     for(const e of EMOJI[curTab]){
-      const b=document.createElement('button'); b.textContent=e;
+      const b=document.createElement('button'); b.type='button'; b.textContent=e;
       b.onclick=()=>{ const i=$('input'); const p=i.selectionStart ?? i.value.length;
         i.value=i.value.slice(0,p)+e+i.value.slice(i.selectionEnd ?? p); i.selectionStart=i.selectionEnd=p+e.length; autosize(); };
       g.appendChild(b);
@@ -712,10 +966,24 @@ $('fileInput').onchange=e=>{ const f=[...e.target.files]; e.target.value=''; tog
 function retrySend(m){ m.local=false; writeMsg(m.ref, m); render(); }
 $('send').onclick=send;
 $('input').addEventListener('keydown',e=>{ if(e.key==='Enter' && !e.shiftKey && !e.isComposing && !/Mobi|Android/i.test(navigator.userAgent)){ e.preventDefault(); send(); } });
-function autosize(){ const i=$('input'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; }
+function autosize(){ const i=$('input'); i.style.height='auto'; i.style.height=Math.min(i.scrollHeight,120)+'px'; $('send').disabled=!i.value.trim(); }
 $('input').addEventListener('input',autosize);
 
 // ===== 방 입장 =====
+// 대화 듣기: 최근 msgLimit개를 실시간으로 받는다. '이전 대화 더 보기'를 누르면 개수를 늘려 다시 듣는다
+function listenMsgs(){
+  if(unsubMsgs) unsubMsgs();
+  const lim = msgLimit;
+  const q = query(collection(fs,'rooms',roomId,'messages'), orderBy('ts'), limitToLast(lim));
+  unsubMsgs = onSnapshot(q, snap=>{
+    msgs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(m=>typeof m.text==='string' && typeof m.ts==='number');
+    hasOlder = snap.docs.length >= lim;       // 꽉 채워 왔으면 더 오래된 대화가 남아 있을 수 있다
+    loaded = true;
+    if(membersLoaded) showRoomStatus();
+    render();
+    keepPos = null; canAnimate = true;
+  }, err=>{ console.error(err); setStatus(t('offline'), 'warn'); });
+}
 let joinSeq=0, moveHops=0;   // moveHops: 방 합치기 표식을 따라 옮긴 횟수 (서로 가리키는 표식이 있어도 맴돌지 않게)
 async function joinRoom(){
   const seq = ++joinSeq;
@@ -726,10 +994,11 @@ async function joinRoom(){
   if(unsubMsgs) unsubMsgs();
   if(unsubMembers) unsubMembers();
   // 방을 바꾸면 이전 방 내용은 화면에서 비운다
-  msgs=[]; roomMembers=[]; membersLoaded=false; localPending.length=0; failed.clear(); showBoth.clear(); trQueue.length=0; trQueued.clear();
+  msgs=[]; roomMembers=[]; membersLoaded=false; localPending.length=0; failed.clear(); flipped.clear(); trQueue.length=0; trQueued.clear();
   roomPacks = new Set();
+  loaded=false; canAnimate=false; shownIds=new Set(); msgLimit=200; hasOlder=false; keepPos=null; alone=false;
   render();
-  showNotice(t('connecting'));
+  paintHeader(null); setStatus(t('connecting'), 'busy');
   // 이 기기에 저장된 사진 이모티콘 코드를 불러오고, 방에도 다시 적어 둔다 (merge: 기존 내용은 유지)
   const mine = savedCodes();
   for(const c of mine) usePack(c);
@@ -737,12 +1006,7 @@ async function joinRoom(){
   setDoc(doc(fs,'rooms',roomId,'members',uid),
     { name:me.name, lang:me.lang, role:me.role, seen:Date.now(), ...(mine.length ? { packs: arrayUnion(...mine) } : {}) },
     { merge:true }).catch(()=>{});
-  const q = query(collection(fs,'rooms',roomId,'messages'), orderBy('ts'), limitToLast(300));
-  unsubMsgs = onSnapshot(q, snap=>{
-    msgs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(m=>typeof m.text==='string' && typeof m.ts==='number');
-    if(membersLoaded) showRoomStatus(); else showNotice(t('tap'));
-    render();
-  }, err=>{ console.error(err); showNotice(t('offline'), true); });
+  listenMsgs();
   // 이 방에 누가 들어와 있는지 (상대가 같은 비밀번호로 들어왔는지 바로 알 수 있게)
   unsubMembers = onSnapshot(collection(fs,'rooms',roomId,'members'), snap=>{
     const all = snap.docs.map(d=>({ id:d.id, ...d.data() }));
@@ -753,10 +1017,12 @@ async function joinRoom(){
     if(mv && /^[a-f0-9]{64}$/.test(mv.moveTo||'') && mv.moveTo!==roomId && moveHops<3){
       moveHops++; me.room = mv.moveTo; store.set('room', me.room); joinRoom(); return;
     }
-    roomMembers = all.filter(m=>m.id!=='_moved');
-    membersLoaded = true; showRoomStatus();
+    // 이름이 '_'로 시작하는 문서는 사람이 아니라 방 설정이다 (앱에서는 만들 수 없고 Firebase 콘솔에서만 만든다):
+    //   _moved = 방 합치기, _packs = 방에 넣어 둔 이모티콘 코드
+    roomMembers = all.filter(m=>!m.id.startsWith('_'));
+    membersLoaded = true; showRoomStatus(); render();
     // 방의 누군가가 추가한 사진 이모티콘은 내 기기에도 자동으로 불러온다
-    for(const mb of roomMembers) for(const c of (Array.isArray(mb.packs) ? mb.packs : []).slice(0,30)){
+    for(const mb of all) for(const c of (Array.isArray(mb.packs) ? mb.packs : []).slice(0,30)){
       const mm = typeof c==='string' && PACK_RE.exec(c);
       if(mm && !roomPacks.has(mm[1])) usePack(c);
     }
@@ -764,67 +1030,98 @@ async function joinRoom(){
   addPending();     // 링크(#pack=코드)로 들어온 경우
 }
 
-// ===== 설정 화면 =====
+// ===== 처음 화면 · 설정 =====
+const EYE = '<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>';
+const svg = inner => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 function setSeg(id, v){ for(const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v===v); }
 let draft={};
+// 고른 언어로 문구를 보여 준다. 아직 언어를 고른 적이 없으면 두 언어를 같이 보여 준다
+const S = (k, sep=' / ') => { const [ko, vi] = SETUP[k]; return draft.chosen ? (draft.lang==='vi' ? vi : ko) : ko + sep + vi; };
+function paintSetup(){
+  const inv = !!inviteRoom, inRoom = !!roomId && !inv;
+  document.documentElement.dataset.me = draft.lang || 'none';         // 언어를 고르면 그 언어의 색이 바로 내 색이 된다 (고르기 전에는 두 색이 겹친 자주색)
+  $('setHead').hidden = !inRoom; $('brand').hidden = inRoom;
+  $('setTitle').textContent = S('title');
+  $('brandName').textContent = draft.chosen ? UI[draft.lang].appName : '우리 둘';
+  $('brandLead').textContent = S('lead', '\n');
+  $('inAppHint').hidden = !IN_APP; $('inAppText').textContent = S('inApp', '\n');
+  $('lbLang').textContent = S('lang'); $('lbRole').textContent = S('role');
+  for(const b of $('segRole').querySelectorAll('button')) b.textContent = S(b.dataset.v, ' · ');
+  $('lbName').textContent = S('name'); $('lbPass').textContent = S('pass'); $('passHint').textContent = S('passHint', '\n');
+  // 초대 링크로 들어온 경우: 비밀번호 칸 대신 '초대받은 방' 안내를 보여 준다
+  $('joinBanner').hidden = !inv; $('passBlock').hidden = inv;
+  if(inv){ $('joinText').textContent = S('joinText', '\n'); $('joinCode').textContent = S('joinCode').replaceAll('{code}', codeOf(inviteRoom)); $('joinCancel').textContent = S('joinCancel'); }
+  $('fPass').placeholder = (!inv && me.room && !me.pass) ? S('linkRoom') : '';
+  $('enterBtn').textContent = inv ? S('enterInvite') : inRoom ? S('save') : S('enter');
+  // 이미 방에 들어와 있으면: 상대에게 보낼 초대 링크, 두 언어 같이 보기
+  $('inviteBox').hidden = !inRoom; $('prefBox').hidden = !inRoom;
+  if(inRoom){
+    const L = UI[draft.lang] || UI.ko;
+    $('inviteLabel').textContent = L.inviteBtn;
+    $('inviteInfo').textContent = L.inviteInfo.replace('{code}', roomCode());
+    $('bothLabel').textContent = S('both'); $('bothHint').textContent = S('bothHint');
+    $('bothBtn').setAttribute('aria-checked', String(bothOn));
+  }
+}
 for(const id of ['segLang','segRole']) $(id).addEventListener('click',e=>{
   const b=e.target.closest('button'); if(!b) return;
-  draft[id==='segLang'?'lang':'role']=b.dataset.v; setSeg(id,b.dataset.v);
+  if(id==='segLang'){ draft.lang=b.dataset.v; draft.chosen=true; } else draft.role=b.dataset.v;
+  setSeg(id,b.dataset.v); paintSetup();
 });
 function openSetup(err){
-  draft={lang:me.lang, role:me.role};
+  const chosen = !!store.get('lang');             // 처음 온 사람은 언어부터 직접 고르게 한다
+  draft={ lang: chosen ? me.lang : null, role:me.role, chosen };
   setSeg('segLang',draft.lang); setSeg('segRole',draft.role);
   $('fName').value=me.name; $('fPass').value=me.pass; $('setupErr').textContent=err||'';
-  $('inAppHint').hidden = !IN_APP;
-  // 초대 링크로 들어온 경우: 비밀번호 칸 대신 '초대받은 방' 안내를 보여 준다
-  const inv = !!inviteRoom;
-  $('joinBanner').hidden = !inv;
-  if(inv) $('joinText').textContent = `💌 초대받은 방으로 들어가요 · 방 확인번호 ${codeOf(inviteRoom)}\nBạn được mời vào phòng · Mã phòng ${codeOf(inviteRoom)}`;
-  $('passBlock').hidden = inv;
-  $('fPass').placeholder = (!inv && me.room && !me.pass) ? '초대 링크로 들어온 방 · Phòng từ link mời' : '';
-  $('enterBtn').textContent = inv ? '초대받은 방에 입장 · Vào phòng được mời' : '입장 · Vào';
-  // 이미 방에 들어와 있으면 상대에게 보낼 초대 링크 버튼을 보여 준다
-  const canInvite = !inv && !!roomId;
-  $('inviteBox').hidden = !canInvite;
-  if(canInvite){ $('inviteBtn').textContent=t('inviteBtn'); $('inviteInfo').textContent=t('inviteInfo').replace('{code}', roomCode()); $('inviteUrl').hidden=true; }
-  $('setup').classList.add('show');
+  $('inviteUrl').hidden=true;
+  paintSetup();
+  $('setup').classList.add('show'); $('setup').scrollTop=0;
 }
+function closeSetup(){ $('setup').classList.remove('show'); document.documentElement.dataset.me=me.lang; }
 $('settingsBtn').onclick=()=>openSetup();
-$('joinCancel').onclick=()=>{ dropInvite(); if(roomId) $('setup').classList.remove('show'); else openSetup(); };
+$('setupClose').onclick=closeSetup;
+$('notice').onclick=()=>{ if(alone && roomId) openSetup(); };       // 혼자일 때 상태 줄을 누르면 초대 화면으로
+$('joinCancel').onclick=()=>{ dropInvite(); if(roomId) closeSetup(); else openSetup(); };
+$('bothBtn').onclick=()=>{ bothOn=!bothOn; store.set('both', bothOn?'1':'0'); flipped.clear(); paintSetup(); render(); };
 // 초대 링크 보내기: 휴대폰에서는 공유 창(메신저 선택)이 뜨고, 안 되면 복사한다
 $('inviteBtn').onclick=async()=>{
   if(!roomId) return;
   const url = location.origin + location.pathname + '#room=' + roomId;
+  const L = UI[draft.lang] || UI.ko;
   if(navigator.share){
-    try{ await navigator.share({ text:'💕 우리 둘 채팅방 초대 링크 · Link mời vào phòng chat của hai đứa mình', url }); return; }
+    try{ await navigator.share({ text:'우리 둘 채팅방 초대 링크 / Link mời vào phòng chat của hai đứa mình', url }); return; }
     catch(e){ if(e && e.name==='AbortError') return; }      // 공유 창을 그냥 닫은 경우
   }
-  try{ await navigator.clipboard.writeText(url); $('inviteInfo').textContent=t('inviteCopied'); }
-  catch{ const i=$('inviteUrl'); i.hidden=false; i.value=url; i.focus(); i.select(); $('inviteInfo').textContent=t('inviteManual'); }
+  try{ await navigator.clipboard.writeText(url); $('inviteInfo').textContent=L.inviteCopied; }
+  catch{ const i=$('inviteUrl'); i.hidden=false; i.value=url; i.focus(); i.select(); $('inviteInfo').textContent=L.inviteManual; }
 };
 // 눈 버튼: 비밀번호 보이기/가리기 (기본은 보이게: 잘못 입력해서 서로 다른 방에 들어가는 일을 막기 위해)
-$('eyeBtn').onclick=()=>{ const f=$('fPass'); const show=f.type==='password'; f.type=show?'text':'password'; $('eyeBtn').textContent=show?'🙈':'👁️'; };
+$('eyeBtn').innerHTML = svg(EYE + '<path d="M4 4l16 16"/>');
+$('eyeBtn').onclick=()=>{ const f=$('fPass'); const show=f.type==='password'; f.type=show?'text':'password'; $('eyeBtn').innerHTML = svg(show ? EYE + '<path d="M4 4l16 16"/>' : EYE); };
 $('setupForm').addEventListener('submit', async e=>{
   e.preventDefault();
   const name=$('fName').value.trim(), pass=$('fPass').value, inv=inviteRoom;
-  // 방을 정하는 방법은 셋 중 하나: 초대 링크 / 비밀번호 입력 / (초대로 들어와 있던 방 그대로)
-  if(!draft.lang||!draft.role||!name||(!inv && !pass && !me.room)){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
+  // 방을 정하는 방법은 셋 중 하나: 초대 링크 / 비밀번호 입력 / (지금 들어와 있는 방 그대로)
+  if(!draft.lang||!draft.role||!name||(!inv && !pass && !me.room)){
+    $('setupErr').textContent = draft.lang ? UI[draft.lang].needAll : UI.ko.needAll + ' / ' + UI.vi.needAll; return; }
   // 내 초대 링크를 내가 누른 경우: 바꿀 것이 없으니 그대로 둔다
-  if(inv && inv===roomId){ dropInvite(); $('setup').classList.remove('show'); flash(t('alreadyIn')); return; }
+  if(inv && inv===roomId){ dropInvite(); closeSetup(); flash(t('alreadyIn')); return; }
   $('enterBtn').disabled=true; $('setupErr').textContent='';
   // 비밀번호가 곧 방 주소라서, 너무 짧으면 남이 추측할 수 있음
-  if(!inv && pass && normPass(pass).length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
-  if(inv){ me.room=inv; me.pass=''; dropInvite(); }     // 초대받은 방으로
-  else if(pass){ me.pass=pass; me.room=''; }               // 비밀번호로 정한 방으로
+  if(!inv && pass && pass!==me.pass && normPass(pass).length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
+  if(inv){ me.room=inv; me.pass=''; dropInvite(); }               // 초대받은 방으로
+  else if(pass && pass!==me.pass){ me.pass=pass; me.room=''; }    // 비밀번호를 새로 입력했으면 그 비밀번호의 방으로 (그대로 두면 지금 방 유지)
   Object.assign(me,{lang:draft.lang, role:draft.role, name});
   for(const k of ['lang','role','name','pass','room']) store.set(k, me[k]);
-  $('enterBtn').disabled=false; $('setup').classList.remove('show');
+  $('enterBtn').disabled=false; closeSetup();
   moveHops=0;
   applyUi(); await joinRoom();
 });
 function applyUi(){
-  document.documentElement.lang=me.lang;
-  $('input').placeholder=t('ph'); render();
+  document.documentElement.lang=me.lang; document.documentElement.dataset.me=me.lang;
+  $('input').placeholder=t('ph');
+  if(roomId && membersLoaded) showRoomStatus(); else paintHeader(null);
+  render();
 }
 
 // 화면으로 돌아오면 실패했던 번역을 자동으로 다시 시도
@@ -833,9 +1130,9 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 // ===== 시작 =====
 applyUi();
 if(auth){
-  showNotice(t('connecting'));
+  setStatus(t('connecting'), 'busy');
   onAuthStateChanged(auth, async u=>{
-    if(!u){ signInAnonymously(auth).catch(e=>{ console.error(e); showNotice(t('offline'),true); }); return; }
+    if(!u){ signInAnonymously(auth).catch(e=>{ console.error(e); setStatus(t('offline'), 'warn'); }); return; }
     uid=u.uid;
     const ready = me.role && me.name && (me.pass || me.room);
     if(ready) joinRoom();
