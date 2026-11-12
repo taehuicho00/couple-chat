@@ -46,9 +46,9 @@
   .send:disabled{opacity:.45}
   .empty{margin:auto;text-align:center;color:var(--sub);font-size:14px;line-height:1.7;padding:30px;white-space:pre-line}
   /* 설정 화면 */
-  #setup{position:fixed;inset:0;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px;z-index:10;overflow:auto}
+  #setup{position:fixed;inset:0;background:var(--bg);display:none;align-items:flex-start;justify-content:center;padding:20px;z-index:10;overflow:auto}
   #setup.show{display:flex}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:380px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;width:100%;max-width:380px;margin:auto}  /* margin:auto = 가운데 정렬 + 화면보다 길면 위에서부터 스크롤 */
   .card h2{margin:0 0 4px;font-size:22px;text-align:center}
   .card p.lead{margin:0 0 18px;text-align:center;color:var(--sub);font-size:13px}
   label{display:block;font-size:13px;color:var(--sub);margin:12px 0 5px}
@@ -62,6 +62,15 @@
   .passwrap input{padding-right:46px}
   .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);border:0;background:none;font-size:20px;cursor:pointer;padding:6px}
   .hint{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.5}
+  [hidden]{display:none!important}
+  /* 초대 링크 */
+  .banner{border:1px solid var(--accent);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.55;text-align:center;margin-bottom:4px}
+  .banner span{display:block;white-space:pre-line}
+  .banner button{border:0;background:none;color:var(--sub);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px 6px 0}
+  .invite{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
+  .ghost{width:100%;padding:11px;border-radius:12px;border:1px solid var(--accent);background:none;color:var(--accent);font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  .invite input{margin-top:8px;font-size:12.5px}
+  .ver{text-align:center;font-size:10.5px;color:var(--sub);opacity:.6;margin-top:10px}
   /* 입력창 왼쪽 버튼 */
   .tool{border:0;background:none;font-size:23px;padding:0 4px;cursor:pointer;line-height:1}
   .tool.on{filter:drop-shadow(0 0 4px var(--accent))}
@@ -130,6 +139,8 @@
   <form class="card" id="setupForm">
     <h2>💕</h2>
     <p class="lead">한국어 ↔ Tiếng Việt</p>
+    <!-- 초대 링크로 들어왔을 때만 보인다 -->
+    <div class="banner" id="joinBanner" hidden><span id="joinText"></span><button type="button" id="joinCancel">초대 취소 · Hủy lời mời</button></div>
     <label id="lbLang">언어 / Ngôn ngữ</label>
     <div class="seg" id="segLang">
       <button type="button" data-v="ko">🇰🇷 한국어</button>
@@ -142,14 +153,23 @@
     </div>
     <label id="lbName" for="fName">내 이름 / Tên</label>
     <input id="fName" maxlength="20" autocomplete="nickname" required>
-    <label id="lbPass" for="fPass">방 비밀번호 / Mật khẩu phòng</label>
-    <div class="passwrap">
-      <input id="fPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" required>
-      <button type="button" class="eye" id="eyeBtn" aria-label="show or hide">🙈</button>
+    <div id="passBlock">
+      <label id="lbPass" for="fPass">방 비밀번호 / Mật khẩu phòng</label>
+      <div class="passwrap">
+        <input id="fPass" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+        <button type="button" class="eye" id="eyeBtn" aria-label="show or hide">🙈</button>
+      </div>
+      <div class="hint">둘이 <b>똑같이</b> 입력해야 같은 방이에요. 더 쉬운 방법: 먼저 들어간 사람이 ⚙️에서 <b>초대 링크</b>를 보내기<br>Hai người phải nhập <b>giống nhau</b>. Dễ hơn: người vào trước mở ⚙️ rồi gửi <b>link mời</b></div>
     </div>
-    <div class="hint">둘이 <b>똑같이</b> 입력해야 같은 방이에요 (대소문자·띄어쓰기는 상관없음)<br>Hai người phải nhập <b>giống nhau</b> (không phân biệt hoa/thường, dấu cách)</div>
     <button class="send" id="enterBtn" type="submit">입장 · Vào</button>
     <div class="err" id="setupErr"></div>
+    <!-- 방에 들어온 뒤 ⚙️에서만 보인다 -->
+    <div class="invite" id="inviteBox" hidden>
+      <button type="button" class="ghost" id="inviteBtn"></button>
+      <div class="hint" id="inviteInfo"></div>
+      <input id="inviteUrl" readonly hidden aria-label="invite link">
+    </div>
+    <div class="ver">v6</div>
   </form>
 </div>
 
@@ -166,13 +186,13 @@ import { STICKERS, EMOJI, stickerSvg, stickerLabel } from "./stickers.js";
 const UI = {
   ko:{ph:'메시지 입력…',translating:'번역 중…',failed:'번역 실패 · 눌러서 다시',sendFail:'전송 실패 · 눌러서 다시',
       empty:'아직 메시지가 없어요.\n내가 한국어로 보내면 상대는 베트남어로 봐요 💌',
-      tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',alone:'⚠️ 아직 이 방에 혼자예요 · 방 확인번호 {code} · 상대 화면의 번호와 같아야 같은 방이에요',together:'💕 {names} 님과 같은 방이에요 · 말풍선을 누르면 원문/번역을 같이 볼 수 있어요',count:'참여자 {n}명',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
+      tap:'말풍선을 누르면 원문/번역을 같이 볼 수 있어요',alone:'⚠️ 아직 이 방에 혼자예요 · ⚙️에서 초대 링크를 보내면 상대가 바로 들어와요 · 방 확인번호 {code}',inviteBtn:'💌 초대 링크 보내기',inviteInfo:'링크를 받은 사람은 비밀번호 없이 이 방으로 들어와요. 링크가 곧 방 열쇠라서 상대에게만 보내세요. (지금 방 확인번호 {code})',inviteCopied:'링크를 복사했어요. 상대에게 붙여넣어 보내 주세요.',inviteManual:'아래 링크를 길게 눌러 복사해서 상대에게 보내 주세요.',alreadyIn:'이미 이 방에 들어와 있어요',together:'💕 {names} 님과 같은 방이에요 · 말풍선을 누르면 원문/번역을 같이 볼 수 있어요',count:'참여자 {n}명',connecting:'연결 중…',offline:'인터넷 연결을 확인해 주세요',
       wrongPass:'비밀번호가 틀렸어요',shortPass:'방 비밀번호는 8자 이상으로 해 주세요 (둘이 똑같이 입력해야 같은 방이에요)',needAll:'모두 입력해 주세요',serverErr:'서버 오류예요. 잠시 후 다시 해 주세요',
       today:'오늘',enter:'입장 · Vào',packEmpty:'사진 이모티콘이 아직 없어요. 받은 코드를 아래에 붙여넣고 추가를 누르면 두 사람 모두에게 생겨요.',packPh:'이모티콘 코드 붙여넣기',packAdd:'추가',packOk:'📸 사진 이모티콘 {n}개가 추가됐어요 · 🐰 버튼 안의 📸 탭에 있어요',packBad:'코드가 올바르지 않아요. 전체를 복사했는지 확인해 주세요',packFail:'이모티콘을 불러오지 못했어요. 잠시 후 다시 해 주세요',photoSticker:'사진 이모티콘',sendingPhoto:'사진 보내는 중…',photoFail:'이 사진은 보낼 수 없어요 (형식을 확인해 주세요)',
       save:'사진을 길게 누르면 저장할 수 있어요',photo:'사진'},
   vi:{ph:'Nhắn tin…',translating:'Đang dịch…',failed:'Dịch lỗi · chạm để thử lại',sendFail:'Gửi lỗi · chạm để thử lại',
       empty:'Chưa có tin nhắn.\nEm nhắn tiếng Việt, anh ấy sẽ đọc bằng tiếng Hàn 💌',
-      tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',alone:'⚠️ Phòng này chưa có ai khác · Mã phòng {code} · phải trùng với số bên kia mới là cùng phòng',together:'💕 Đang cùng phòng với {names} · Chạm vào tin nhắn để xem bản gốc và bản dịch',count:'{n} người',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
+      tap:'Chạm vào tin nhắn để xem cả bản gốc và bản dịch',alone:'⚠️ Phòng này chưa có ai khác · Mở ⚙️ gửi link mời là người ấy vào được ngay · Mã phòng {code}',inviteBtn:'💌 Gửi link mời',inviteInfo:'Người nhận link sẽ vào thẳng phòng này, không cần mật khẩu. Link chính là chìa khóa phòng nên chỉ gửi cho người ấy thôi nhé. (Mã phòng hiện tại {code})',inviteCopied:'Đã sao chép link. Dán và gửi cho người ấy nhé.',inviteManual:'Nhấn giữ link bên dưới để sao chép rồi gửi cho người ấy nhé.',alreadyIn:'Bạn đang ở phòng này rồi',together:'💕 Đang cùng phòng với {names} · Chạm vào tin nhắn để xem bản gốc và bản dịch',count:'{n} người',connecting:'Đang kết nối…',offline:'Kiểm tra kết nối mạng nhé',
       wrongPass:'Sai mật khẩu rồi',shortPass:'Mật khẩu phòng cần ít nhất 8 ký tự (hai người nhập giống nhau mới vào cùng phòng nhé)',needAll:'Điền đủ thông tin nhé',serverErr:'Lỗi máy chủ. Thử lại sau nhé',
       today:'Hôm nay',enter:'Vào · 입장',packEmpty:'Chưa có sticker ảnh. Dán mã nhận được vào bên dưới rồi bấm Thêm, cả hai sẽ cùng có.',packPh:'Dán mã sticker',packAdd:'Thêm',packOk:'📸 Đã thêm {n} sticker ảnh · xem ở tab 📸 trong nút 🐰',packBad:'Mã không đúng. Kiểm tra đã sao chép đủ chưa nhé',packFail:'Không tải được sticker. Thử lại sau nhé',photoSticker:'Sticker ảnh',sendingPhoto:'Đang gửi ảnh…',photoFail:'Không gửi được ảnh này (kiểm tra định dạng nhé)',
       save:'Nhấn giữ ảnh để lưu',photo:'Ảnh'}
@@ -185,7 +205,8 @@ let me = {
   lang: store.get('lang') || ((navigator.language||'').startsWith('vi') ? 'vi' : 'ko'),
   role: store.get('role') || null,
   name: store.get('name') || '',
-  pass: store.get('pass') || ''
+  pass: store.get('pass') || '',
+  room: /^[a-f0-9]{64}$/.test(store.get('room')||'') ? store.get('room') : ''   // 초대 링크로 들어온 방 주소 (비밀번호 대신 쓴다)
 };
 const t = k => (UI[me.lang]||UI.ko)[k];
 
@@ -233,10 +254,18 @@ async function sha256(s){
 // 같은 비밀번호인데 대소문자·띄어쓰기·글자 조합 방식이 달라서 다른 방이 되는 일을 막는다
 const normPass = p => String(p||'').normalize('NFKC').toLowerCase().replace(/\s+/g,'');
 // 방 확인번호: 방 주소(해시)에서 뽑은 4자리 숫자. 둘의 번호가 같으면 같은 방 (비밀번호는 드러나지 않음)
-const roomCode = () => roomId ? String(parseInt(roomId.slice(0,8),16)%10000).padStart(4,'0') : '';
+const codeOf = id => id ? String(parseInt(id.slice(0,8),16)%10000).padStart(4,'0') : '';
+const roomCode = () => codeOf(roomId);
+// 같은 사람이 다른 브라우저로(또는 저장 기록이 지워진 뒤) 다시 들어오면 서버에는 '새 사람'으로 잡힌다.
+// 이름·언어·역할이 모두 같으면 같은 사람으로 본다: 예전의 나를 상대로 세지 않고, 내 말풍선은 계속 내 쪽에 그린다.
+const personKey = x => [String(x.name||'').trim().normalize('NFKC').toLowerCase(), x.lang||'', x.role||''].join('|');
+const sameAsMe = x => !!x && !!me.name && personKey(x)===personKey(me);
+const isMine = m => m.uid===uid || sameAsMe(m);
+const whoOf = m => isMine(m) ? 'me' : personKey(m);
 function showRoomStatus(){
   if(!roomId || !membersLoaded) return;
-  const others = roomMembers.filter(m=>m.id!==uid);
+  // 나(예전의 나 포함)를 빼고, 같은 사람이 여러 번 잡힌 것은 한 명으로 센다
+  const others = [...new Map(roomMembers.filter(m=>m.id!==uid && !sameAsMe(m)).map(o=>[personKey(o), o])).values()];
   if(!others.length){ showNotice(t('alone').replace('{code}', roomCode()), true); return; }
   let text = t('together').replace('{names}', others.map(o=>o.name||'💕').join(', '));
   if(others.length>1) text += ' · ' + t('count').replace('{n}', others.length+1);
@@ -340,7 +369,20 @@ function addPending(){
   const c = pendingPack; pendingPack = null;
   addPack(c).then(r=>{ if(r!=='ok') flash(t(r==='bad'?'packBad':'packFail'), true); });
 }
-window.addEventListener('hashchange', ()=>{ const c = takeHashCode(); if(c){ pendingPack = c; addPending(); } });
+// ===== 초대 링크 (#room=방 주소) =====
+// 비밀번호를 손으로 입력하다 한 글자라도 달라지면 서로 다른 방이 된다. 그래서 방 주소를 링크로 넘겨받아 그대로 들어가게 한다.
+// 링크를 눌러도 바로 방이 바뀌지는 않고, 설정 화면에서 '입장'을 눌러야 들어간다 (엉뚱한 링크로 방이 바뀌는 일 방지).
+function takeHashRoom(){
+  const m = /^#room=([a-f0-9]{64})$/.exec(location.hash||''); if(!m) return null;
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch{}
+  return m[1];
+}
+let inviteRoom = takeHashRoom();
+window.addEventListener('hashchange', ()=>{
+  const c = takeHashCode(); if(c){ pendingPack = c; addPending(); }
+  const r = takeHashRoom();
+  if(r){ if(r===roomId) flash(t('alreadyIn')); else { inviteRoom = r; openSetup(); } }
+});
 
 // ===== 번역 (Gemini) =====
 function buildPrompt(text, target, senderRole, context){
@@ -429,8 +471,8 @@ function render(){
   for(const m of all){
     const day=new Date(m.ts).toDateString();
     if(day!==lastDay){ const d=document.createElement('div'); d.className='day'; d.textContent=fmtDay(m.ts); list.appendChild(d); lastDay=day; prev=null; }
-    const mine = m.uid===uid;
-    const cont = prev && prev.uid===m.uid && m.ts-prev.ts<120000;
+    const mine = isMine(m);
+    const cont = prev && whoOf(prev)===whoOf(m) && m.ts-prev.ts<120000;
     const row=document.createElement('div'); row.className='row '+(mine?'me':'other')+(cont?' cont':'');
     if(!mine && !cont){ const n=document.createElement('div'); n.className='name'; n.textContent=m.name||'💕'; row.appendChild(n); }
 
@@ -666,8 +708,13 @@ function autosize(){ const i=$('input'); i.style.height='auto'; i.style.height=M
 $('input').addEventListener('input',autosize);
 
 // ===== 방 입장 =====
+let joinSeq=0;
 async function joinRoom(){
-  roomId = await sha256('couple-chat|'+normPass(me.pass));
+  const seq = ++joinSeq;
+  // 초대 링크로 들어온 기기는 받은 방 주소를 그대로 쓰고, 아니면 비밀번호로 방 주소를 만든다
+  const rid = me.room || await sha256('couple-chat|'+normPass(me.pass));
+  if(seq!==joinSeq) return;          // 그 사이 다른 방으로 다시 들어갔으면 이번 것은 버린다
+  roomId = rid;
   if(unsubMsgs) unsubMsgs();
   if(unsubMembers) unsubMembers();
   // 방을 바꾸면 이전 방 내용은 화면에서 비운다
@@ -678,7 +725,8 @@ async function joinRoom(){
   // 이 기기에 저장된 사진 이모티콘 코드를 불러오고, 방에도 다시 적어 둔다 (merge: 기존 내용은 유지)
   const mine = savedCodes();
   for(const c of mine) usePack(c);
-  await setDoc(doc(fs,'rooms',roomId,'members',uid),
+  // (기다리지 않는다: 인터넷이 느릴 때 이 저장이 끝나기를 기다리느라 대화가 안 뜨는 일을 막는다)
+  setDoc(doc(fs,'rooms',roomId,'members',uid),
     { name:me.name, lang:me.lang, role:me.role, seen:Date.now(), ...(mine.length ? { packs: arrayUnion(...mine) } : {}) },
     { merge:true }).catch(()=>{});
   const q = query(collection(fs,'rooms',roomId,'messages'), orderBy('ts'), limitToLast(300));
@@ -711,21 +759,48 @@ function openSetup(err){
   draft={lang:me.lang, role:me.role};
   setSeg('segLang',draft.lang); setSeg('segRole',draft.role);
   $('fName').value=me.name; $('fPass').value=me.pass; $('setupErr').textContent=err||'';
+  // 초대 링크로 들어온 경우: 비밀번호 칸 대신 '초대받은 방' 안내를 보여 준다
+  const inv = !!inviteRoom;
+  $('joinBanner').hidden = !inv;
+  if(inv) $('joinText').textContent = `💌 초대받은 방으로 들어가요 · 방 확인번호 ${codeOf(inviteRoom)}\nBạn được mời vào phòng · Mã phòng ${codeOf(inviteRoom)}`;
+  $('passBlock').hidden = inv;
+  $('fPass').placeholder = (!inv && me.room && !me.pass) ? '초대 링크로 들어온 방 · Phòng từ link mời' : '';
+  $('enterBtn').textContent = inv ? '초대받은 방에 입장 · Vào phòng được mời' : '입장 · Vào';
+  // 이미 방에 들어와 있으면 상대에게 보낼 초대 링크 버튼을 보여 준다
+  const canInvite = !inv && !!roomId;
+  $('inviteBox').hidden = !canInvite;
+  if(canInvite){ $('inviteBtn').textContent=t('inviteBtn'); $('inviteInfo').textContent=t('inviteInfo').replace('{code}', roomCode()); $('inviteUrl').hidden=true; }
   $('setup').classList.add('show');
 }
 $('settingsBtn').onclick=()=>openSetup();
+$('joinCancel').onclick=()=>{ inviteRoom=null; if(roomId) $('setup').classList.remove('show'); else openSetup(); };
+// 초대 링크 보내기: 휴대폰에서는 공유 창(메신저 선택)이 뜨고, 안 되면 복사한다
+$('inviteBtn').onclick=async()=>{
+  if(!roomId) return;
+  const url = location.origin + location.pathname + '#room=' + roomId;
+  if(navigator.share){
+    try{ await navigator.share({ text:'💕 우리 둘 채팅방 초대 링크 · Link mời vào phòng chat của hai đứa mình', url }); return; }
+    catch(e){ if(e && e.name==='AbortError') return; }      // 공유 창을 그냥 닫은 경우
+  }
+  try{ await navigator.clipboard.writeText(url); $('inviteInfo').textContent=t('inviteCopied'); }
+  catch{ const i=$('inviteUrl'); i.hidden=false; i.value=url; i.focus(); i.select(); $('inviteInfo').textContent=t('inviteManual'); }
+};
 // 눈 버튼: 비밀번호 보이기/가리기 (기본은 보이게: 잘못 입력해서 서로 다른 방에 들어가는 일을 막기 위해)
 $('eyeBtn').onclick=()=>{ const f=$('fPass'); const show=f.type==='password'; f.type=show?'text':'password'; $('eyeBtn').textContent=show?'🙈':'👁️'; };
 $('setupForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const name=$('fName').value.trim(), pass=$('fPass').value;
-  if(!draft.lang||!draft.role||!name||!pass){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
+  const name=$('fName').value.trim(), pass=$('fPass').value, inv=inviteRoom;
+  // 방을 정하는 방법은 셋 중 하나: 초대 링크 / 비밀번호 입력 / (초대로 들어와 있던 방 그대로)
+  if(!draft.lang||!draft.role||!name||(!inv && !pass && !me.room)){ $('setupErr').textContent=UI[draft.lang||'ko'].needAll; return; }
+  // 내 초대 링크를 내가 누른 경우: 바꿀 것이 없으니 그대로 둔다
+  if(inv && inv===roomId){ inviteRoom=null; $('setup').classList.remove('show'); flash(t('alreadyIn')); return; }
   $('enterBtn').disabled=true; $('setupErr').textContent='';
   // 비밀번호가 곧 방 주소라서, 너무 짧으면 남이 추측할 수 있음
-  if(normPass(pass).length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
-  me.pass=pass;
+  if(!inv && pass && normPass(pass).length<8){ $('setupErr').textContent=UI[draft.lang].shortPass; $('enterBtn').disabled=false; return; }
+  if(inv){ me.room=inv; me.pass=''; inviteRoom=null; }     // 초대받은 방으로
+  else if(pass){ me.pass=pass; me.room=''; }               // 비밀번호로 정한 방으로
   Object.assign(me,{lang:draft.lang, role:draft.role, name});
-  for(const k of ['lang','role','name','pass']) store.set(k, me[k]);
+  for(const k of ['lang','role','name','pass','room']) store.set(k, me[k]);
   $('enterBtn').disabled=false; $('setup').classList.remove('show');
   applyUi(); await joinRoom();
 });
@@ -744,7 +819,11 @@ if(auth){
   onAuthStateChanged(auth, async u=>{
     if(!u){ signInAnonymously(auth).catch(e=>{ console.error(e); showNotice(t('offline'),true); }); return; }
     uid=u.uid;
-    if(me.role && me.name && me.pass) joinRoom(); else openSetup();
+    const ready = me.role && me.name && (me.pass || me.room);
+    if(ready) joinRoom();
+    // 초대 링크로 열었으면 설정 화면에서 확인받는다 (이미 그 방이면 넘어간다)
+    if(inviteRoom && inviteRoom===me.room) inviteRoom=null;
+    if(inviteRoom || !ready) openSetup();
   });
 }
 </script>
